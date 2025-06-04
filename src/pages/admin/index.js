@@ -14,11 +14,14 @@ import {
 import Image from "next/image";
 import { BASE_URL } from "../../../constant";
 import Link from "next/link";
+import { useStyleRegistry } from "styled-jsx";
+import { useRouter } from "next/router";
 
 const Admin = () => {
   const inputRef = useRef(null);
   const [files, setFiles] = useState([]);
   const [uploadedCount, setUploadedCount] = useState(0);
+
   const [flipbooks, setFlipbooks] = useState([
     {
       id: 1,
@@ -75,6 +78,16 @@ const Admin = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [message, setMessage] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("isUserLoggedIn"));
+    setIsUserLoggedIn(data);
+    if (!data) {
+      router.replace("/");
+    }
+  }, []);
 
   const handleCreateNew = () => {
     // setCurrentView("create");
@@ -206,7 +219,7 @@ const Admin = () => {
           </p>
 
           {/* <div className="flex gap-2"> */}
-            {/* <Link href={`/edit-flipbook/${flipbook?.name}`}>
+          {/* <Link href={`/edit-flipbook/${flipbook?.name}`}>
             <button
               // onClick={() => handlePlayFlipbook(flipbook)}
               className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
@@ -216,7 +229,7 @@ const Admin = () => {
             </button>
           </Link> */}
 
-            {/* <button
+          {/* <button
             onClick={() => handleEditFlipbook(flipbook)}
             className="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-lg transition-colors"
           >
@@ -229,7 +242,6 @@ const Admin = () => {
             <Trash2 size={16} />
           </button> */}
           {/* </div> */}
-
         </div>
       </div>
     </Link>
@@ -334,6 +346,9 @@ const Admin = () => {
     getAllBrocchures();
   }, []);
 
+  if (!isUserLoggedIn) {
+    return null;
+  }
   return (
     <div className="min-h-screen ">
       <div className="container mx-auto px-4 py-8 relative">

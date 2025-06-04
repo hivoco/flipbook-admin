@@ -179,6 +179,7 @@ const EditFlipbook = () => {
       return;
     }
     sendTextGetAudioLink(text, gender);
+    setText("")
   };
 
   const sendTextGetAudioLink = async (text, gender) => {
@@ -191,6 +192,7 @@ const EditFlipbook = () => {
         body: JSON.stringify({
           text: text,
           gender: gender,
+          brochureName:flipbookName
         }),
       });
 
@@ -1069,7 +1071,7 @@ const EditFlipbook = () => {
                       onClick={() => setPopUpVisible(false)}
                       className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm transition-colors"
                     >
-                      Cancel
+                      Cancle
                     </button>
                   </div>
                 </div>
