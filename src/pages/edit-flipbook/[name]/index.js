@@ -17,10 +17,11 @@ import {
   Pause,
   Edit3,
   FileVideo,
-  Trash2, // Added for delete icon
+  Trash2,
+  CopyCheck, // Added for delete icon
 } from "lucide-react";
 import Image from "next/image";
-import { BASE_URL } from "../../../../constant";
+import { BASE_URL, USER_FACING_URL } from "../../../../constant";
 import YouTube from "react-youtube";
 
 const EditFlipbook = () => {
@@ -208,6 +209,15 @@ const EditFlipbook = () => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(audioSrc);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+  const handleCopyURL = async () => {
+    try {
+      await navigator.clipboard.writeText(`${USER_FACING_URL}/${flipbookName}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -577,6 +587,7 @@ const EditFlipbook = () => {
   );
 
   const [gotPoints, setGotPoints] = useState([]);
+  
 
   const getPoints = async () => {
     try {
@@ -602,6 +613,8 @@ const EditFlipbook = () => {
       alert("add brochureName");
     }
 
+    setSelectedPoint(null);
+    setActiveGotPoint(null);
     try {
       const res = await fetch(`${BASE_URL}/link/media-link`, {
         method: "POST",
@@ -849,7 +862,7 @@ const EditFlipbook = () => {
                               className={`absolute inset-0 w-4 h-4 rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/2 border-2 border-white shadow-lg hover:scale-110 transition-transform ${
                                 playingMediaId === obj._id
                                   ? "bg-green-400"
-                                  : "bg-blue-400"
+                                  : "!bg-blue-400"
                               }`}
                               style={{
                                 left: `${obj.coordinates.x}%`,
@@ -1080,6 +1093,19 @@ const EditFlipbook = () => {
                 )}
               </div>
             )}
+
+            <button
+              onClick={() => handleCopyURL()}
+              className="text-white p-1 md:p-3 hover:bg-gray-700 re"
+            >
+              <span className="text-gray-600">
+                {copied ? (
+                  <ClipboardCheck color="white" size={28} />
+                ) : (
+                  <Copy color="white" size={28} />
+                )}
+              </span>
+            </button>
           </div>
         </div>
       </div>
