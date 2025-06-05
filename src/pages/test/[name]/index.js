@@ -18,17 +18,17 @@ import {
   Edit3,
   FileVideo,
   Trash2,
-  CopyCheck,
-  Share,
-  Share2, // Added for delete icon
+  CopyCheck, // Added for delete icon
 } from "lucide-react";
 import Image from "next/image";
-import { BASE_URL, USER_FACING_URL } from "../../../../constant";
+// import { BASE_URL, USER_FACING_URL } from "../../../../constant";
+import { BASE_URL, USER_FACING_URL } from "../../../../constant.js"
+
 import YouTube from "react-youtube";
-import { handleShare } from "@/utilities/editFlipbook.helper.js";
 
 const EditFlipbook = () => {
-  const bookRef = useRef();
+  const bookRef = useRef(null);
+
   const audioRef = useRef();
   const divRef = useRef();
   const videoRef = useRef();
@@ -819,27 +819,43 @@ const EditFlipbook = () => {
               className="transition-transform duration-300 ease-out w-full h-full flex items-center justify-center"
             >
               <HTMLFlipBook
-                width={windowWidth < 640 ? windowWidth - 32 : 400}
-                height={windowWidth < 640 ? (windowWidth - 32) * 1.4 : 560}
-                size="stretch"
-                minWidth={windowWidth < 640 ? windowWidth : 300}
-                minHeight={windowWidth < 640 ? windowWidth * 1.4 : 420}
-                maxWidth={
-                  windowWidth < 640
-                    ? windowWidth - 16
-                    : (windowHeight - 70) / 1.4
-                }
-                maxHeight={
-                  windowWidth < 640 ? windowHeight - 200 : windowHeight - 70
-                }
-                mobileScrollSupport={true}
-                onFlip={onFlip}
-                flippingTime={500}
+                // width={windowWidth < 640 ? windowWidth - 32 : 400}
+                // height={windowWidth < 640 ? (windowWidth - 32) * 1.4 : 560}
+                // size="stretch"
+                // minWidth={windowWidth < 640 ? windowWidth : 300}
+                // minHeight={windowWidth < 640 ? windowWidth * 1.4 : 420}
+                // maxWidth={
+                //   windowWidth < 640
+                //     ? windowWidth - 16
+                //     : (windowHeight - 70) / 1.4
+                // }
+                // maxHeight={
+                //   windowWidth < 640 ? windowHeight - 200 : windowHeight - 70
+                // }
+                // mobileScrollSupport={true}
+                // onFlip={onFlip}
+                // flippingTime={500}
+                // ref={bookRef}
+                // startPage={0}
+                // autoSize={true}
+                // usePortrait={true}
+                // useMouseEvents={false}
+                // className="w-full h-auto max-w-full max-h-full"
+
                 ref={bookRef}
-                startPage={0}
-                autoSize={true}
-                useMouseEvents={false}
-                className="w-full h-auto max-w-full max-h-full "
+                width={1000}
+                height={450}
+                size="stretch"
+                minWidth={600}
+                maxWidth={1000}
+                minHeight={400}
+                maxHeight={600}
+
+                maxShadowOpacity={0.5}
+                showCover={true}
+                mobileScrollSupport={false}
+                onFlip={onFlip}
+                className="shadow-lg"
               >
                 {flipbookImages?.map((imageSrc, index) => (
                   <div
@@ -1109,13 +1125,6 @@ const EditFlipbook = () => {
                   <Copy color="white" size={28} />
                 )}
               </span>
-            </button>
-
-            <button
-              onClick={() => handleShare(`${USER_FACING_URL}/${flipbookName}`)}
-              className="text-white p-1 md:p-3 hover:bg-gray-700 re"
-            >
-              <Share2 size={28} />
             </button>
           </div>
         </div>
