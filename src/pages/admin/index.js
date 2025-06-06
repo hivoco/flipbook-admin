@@ -12,10 +12,11 @@ import {
   Loader2,
 } from "lucide-react";
 import Image from "next/image";
-import { BASE_URL } from "../../../constant";
+import { BASE_URL, employeeArray } from "../../../constant";
 import Link from "next/link";
 import { useStyleRegistry } from "styled-jsx";
 import { useRouter } from "next/router";
+import useCheckAuthOnRoute from "@/hooks/useCheckAuthOnRoute";
 
 const Admin = () => {
   const inputRef = useRef(null);
@@ -78,16 +79,19 @@ const Admin = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [message, setMessage] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
-  const router = useRouter();
+  // const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
-  useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("isUserLoggedIn"));
-    setIsUserLoggedIn(data);
-    if (!data) {
-      router.replace("/");
-    }
-  }, []);
+  // const router = useRouter();
+  const [selectedEmployee, setSelectedEmployee] = useState("");
+  const isUserLoggedIn = useCheckAuthOnRoute();
+
+  // useEffect(() => {
+  //   const data = JSON.parse(localStorage.getItem("isUserLoggedIn"));
+  //   setIsUserLoggedIn(data);
+  //   if (!data) {
+  //     router.replace("/");
+  //   }
+  // }, []);
 
   const handleCreateNew = () => {
     // setCurrentView("create");
@@ -102,87 +106,70 @@ const Admin = () => {
     }
   }, [popUpVisible]);
 
-  // const handleImageUpload = async (e) => {
-  //   const files = e.target.files; // FileList (array-like)
-  //   console.log(files);
+  // const handleSaveFlipbook = () => {
+  //   if (!newFlipbookName.trim() || uploadedImages.length === 0) {
+  //     alert("Please provide a name and upload at least one image");
+  //     return;
+  //   }
 
-  //   if (!files.length) return;
+  //   const newFlipbook = {
+  //     id: Date.now(),
+  //     name: newFlipbookName,
+  //     images: uploadedImages,
+  //     createdAt: new Date().toLocaleDateString(),
+  //   };
 
-  //   setUploadedImages(files);
-  //   uploadImages(files);
+  //   if (editingFlipbook) {
+  //     setFlipbooks((prev) =>
+  //       prev.map((fb) => (fb.id === editingFlipbook.id ? newFlipbook : fb))
+  //     );
+  //     setEditingFlipbook(null);
+  //   } else {
+  //     setFlipbooks((prev) => [...prev, newFlipbook]);
+  //   }
 
-  //   // try {
-  //   //   const result = await uploadImages(files);
-  //   //   console.log('Upload success:', result);
-  //   // } catch (err) {
-  //   //   console.error('Upload error:', err);
-  //   // }
+  //   setCurrentView("gallery");
+  //   setNewFlipbookName("");
+  //   setUploadedImages([]);
+  //   setPopUpVisible(false);
   // };
 
-  const handleSaveFlipbook = () => {
-    if (!newFlipbookName.trim() || uploadedImages.length === 0) {
-      alert("Please provide a name and upload at least one image");
-      return;
-    }
+  // const handleEditFlipbook = (flipbook) => {
+  //   setEditingFlipbook(flipbook);
+  //   setNewFlipbookName(flipbook.name);
+  //   setUploadedImages(flipbook.images);
+  //   setCurrentView("create");
+  // };
 
-    const newFlipbook = {
-      id: Date.now(),
-      name: newFlipbookName,
-      images: uploadedImages,
-      createdAt: new Date().toLocaleDateString(),
-    };
+  // const handleDeleteFlipbook = (id) => {
+  //   if (confirm("Are you sure you want to delete this flipbook?")) {
+  //     setFlipbooks((prev) => prev.filter((fb) => fb.id !== id));
+  //   }
+  // };
 
-    if (editingFlipbook) {
-      setFlipbooks((prev) =>
-        prev.map((fb) => (fb.id === editingFlipbook.id ? newFlipbook : fb))
-      );
-      setEditingFlipbook(null);
-    } else {
-      setFlipbooks((prev) => [...prev, newFlipbook]);
-    }
+  // const handlePlayFlipbook = (flipbook) => {
+  //   setPlayingFlipbook(flipbook);
+  //   setCurrentPage(0);
+  //   setCurrentView("play");
 
-    setCurrentView("gallery");
-    setNewFlipbookName("");
-    setUploadedImages([]);
-    setPopUpVisible(false);
-  };
+  //   const interval = setInterval(() => {
+  //     setCurrentPage((prev) => (prev + 1) % flipbook.images.length);
+  //   }, 1000);
+  //   setPlayInterval(interval);
+  // };
 
-  const handleEditFlipbook = (flipbook) => {
-    setEditingFlipbook(flipbook);
-    setNewFlipbookName(flipbook.name);
-    setUploadedImages(flipbook.images);
-    setCurrentView("create");
-  };
+  // const handleStopPlay = () => {
+  //   if (playInterval) {
+  //     clearInterval(playInterval);
+  //     setPlayInterval(null);
+  //   }
+  //   setPlayingFlipbook(null);
+  //   setCurrentView("gallery");
+  // };
 
-  const handleDeleteFlipbook = (id) => {
-    if (confirm("Are you sure you want to delete this flipbook?")) {
-      setFlipbooks((prev) => prev.filter((fb) => fb.id !== id));
-    }
-  };
-
-  const handlePlayFlipbook = (flipbook) => {
-    setPlayingFlipbook(flipbook);
-    setCurrentPage(0);
-    setCurrentView("play");
-
-    const interval = setInterval(() => {
-      setCurrentPage((prev) => (prev + 1) % flipbook.images.length);
-    }, 1000);
-    setPlayInterval(interval);
-  };
-
-  const handleStopPlay = () => {
-    if (playInterval) {
-      clearInterval(playInterval);
-      setPlayInterval(null);
-    }
-    setPlayingFlipbook(null);
-    setCurrentView("gallery");
-  };
-
-  const removeImage = (index) => {
-    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
-  };
+  // const removeImage = (index) => {
+  //   setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+  // };
 
   const FlipbookCard = ({ id, flipbook }) => (
     <Link href={`/edit-flipbook/${flipbook?.name}`}>
@@ -304,7 +291,9 @@ const Admin = () => {
 
     try {
       const formData = new FormData();
-      formData.append("displayName", newFlipbookName);
+      formData.append("displayName", newFlipbookName.trim());
+      formData.append("personName", selectedEmployee.trim());
+
       selectedFiles.forEach((file, idx) => {
         // You can change 'images' to whatever your backend expects
         formData.append("images", file);
@@ -320,7 +309,6 @@ const Admin = () => {
       }
 
       const data = await response.json();
-      // Assume backend returns something like { success: true, uploadedUrls: [...] }
       setMessage("Upload successful");
       setPopUpVisible(false);
       getAllBrocchures();
@@ -352,188 +340,177 @@ const Admin = () => {
   return (
     <div className="min-h-screen ">
       <div className="container mx-auto px-4 py-8 relative">
-        {/* Header */}
-        {/* <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2 drop-shadow-lg">
-            Flipbook Creator
-          </h1>
-        </div> */}
+        {/* {currentView === "gallery" && ( */}
+        <div>
+          <div className="flex justify-between items-center mb-10 px-20">
+            <h2 className="text-4xl font-bold text-gray-800 mb-2 drop-shadow-lg">
+              Flipbook Creator
+            </h2>
+            <button
+              onClick={handleCreateNew}
+              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transform hover:scale-105 transition-all duration-200 shadow-lg"
+            >
+              <Plus size={20} />
+              Create New Flipbook
+            </button>
+          </div>
 
-        {/* Gallery View */}
-        {currentView === "gallery" && (
-          <div>
-            <div className="flex justify-between items-center mb-10 px-20">
-              <h2 className="text-4xl font-bold text-gray-800 mb-2 drop-shadow-lg">
-                Flipbook Creator
-              </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-20">
+            {flipbooks?.map((flipbook) => (
+              <FlipbookCard
+                id={flipbook?._id}
+                key={flipbook?._id}
+                flipbook={flipbook}
+              />
+            ))}
+          </div>
+
+          {flipbooks?.length === 0 && (
+            <div className="text-center py-16">
+              <BookOpen
+                size={64}
+                className="mx-auto text-white mb-4 opacity-60"
+              />
+              <p className="text-white text-xl mb-4">No flipbooks yet</p>
               <button
                 onClick={handleCreateNew}
-                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transform hover:scale-105 transition-all duration-200 shadow-lg"
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 mx-auto transition-colors"
               >
                 <Plus size={20} />
-                Create New Flipbook
+                Create Your First Flipbook
+              </button>
+            </div>
+          )}
+        </div>
+        {/* )} */}
+
+        {popUpVisible && (
+          <div className="absolute top-20 w-sm max-w-1/3 right-3 bg-gray-100 rounded-xl shadow-2xl p-5">
+            <div className="flex justify-between gap-5 items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">
+                {editingFlipbook ? "Edit Flipbook" : "Create New Flipbook"}
+              </h2>
+              <button
+                onClick={() => {
+                  setPopUpVisible(false);
+                }}
+                className="text-white px-3 py-2 bg-red-500 shadow-md  hover:bg-red-700 flex items-center justify-center
+                 rounded-lg font-semibold transition-all duration-300 ease-in-out hover:shadow-red-500/25 hover:scale-110
+                "
+              >
+                <X size={28} />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-20">
-              {flipbooks?.map((flipbook) => (
-                <FlipbookCard
-                  id={flipbook?._id}
-                  key={flipbook?._id}
-                  flipbook={flipbook}
-                />
-              ))}
-            </div>
+            <div className="space-y-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={newFlipbookName}
+                onChange={(e) => setNewFlipbookName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-800  outline-none  transition-all"
+                placeholder="Enter flipbook name..."
+              />
+              
+              <select
+                value={selectedEmployee}
+                onChange={(e) => setSelectedEmployee(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-800 capitalize   outline-none transition-all"
+              >
+                <option value="" disabled>
+                  Select employee
+                </option>
+                {employeeArray.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
 
-            {flipbooks?.length === 0 && (
-              <div className="text-center py-16">
-                <BookOpen
-                  size={64}
-                  className="mx-auto text-white mb-4 opacity-60"
-                />
-                <p className="text-white text-xl mb-4">No flipbooks yet</p>
-                <button
-                  onClick={handleCreateNew}
-                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 mx-auto transition-colors"
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload Images
+                </label>
+
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-outline-blue-500 hover:border-blue-500 cursor-pointer transition-colors"
                 >
-                  <Plus size={20} />
-                  Create Your First Flipbook
+                  <Upload size={48} className="mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-600">Click to upload images</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Select multiple images at once
+                  </p>
+                </div>
+
+                {message && (
+                  <p className="text-sm text-gray-500 mt-1">{message}</p>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  // onChange={handleImageUpload}
+                  // onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+
+              {uploadedImages.length > 0 && (
+                <div>{uploadedImages.length} images added</div>
+                // <div>
+                //   <h3 className="text-lg font-medium text-gray-700 mb-3">
+                //     Preview ({uploadedImages.length} images)
+                //   </h3>
+                //   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                //     {uploadedImages.map((image, index) => (
+                //       <div key={index} className="relative group">
+                //         <img
+                //           src={image}
+                //           alt={`Page ${index + 1}`}
+                //           className="w-full h-24 object-cover rounded-lg"
+                //         />
+                //         <button
+                //           onClick={() => removeImage(index)}
+                //           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                //         >
+                //           <X size={12} />
+                //         </button>
+                //         <div className="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-xs px-1 rounded">
+                //           {index + 1}
+                //         </div>
+                //       </div>
+                //     ))}
+                //   </div>
+                // </div>
+              )}
+
+              <div className="flex gap-4">
+                <button
+                  onClick={handleUpload}
+                  // onClick={handleImageUpload}
+                  // onClick={handleSaveFlipbook}
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Save size={20} />
+                  {editingFlipbook
+                    ? "Update Flipbook"
+                    : uploading
+                    ? "Uploading..."
+                    : "Add Brochure"}
+
+                  {uploading && <Loader2 size={20} className="animate-spin" />}
                 </button>
               </div>
-            )}
+            </div>
           </div>
         )}
 
-        {/* Create/Edit View */}
-        {
-          // currentView === "create"
-          popUpVisible && (
-            <div className="absolute top-20 max-w-1/3 right-3 bg-gray-100 rounded-xl shadow-2xl p-5">
-              <div className="flex justify-between gap-5 items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {editingFlipbook ? "Edit Flipbook" : "Create New Flipbook"}
-                </h2>
-                <button
-                  onClick={() => {
-                    setPopUpVisible(false);
-                  }}
-                  className="text-white px-3 py-2 bg-red-500 shadow-md  hover:bg-red-700 flex items-center justify-center
-                 rounded-lg font-semibold transition-all duration-300 ease-in-out hover:shadow-red-500/25 hover:scale-110
-                "
-                >
-                  <X size={28} />
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Flipbook Name
-                  </label>
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={newFlipbookName}
-                    onChange={(e) => setNewFlipbookName(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:scale-99 focus:border-transparent"
-                    placeholder="Enter flipbook name..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Upload Images
-                  </label>
-
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-outline-blue-500 hover:border-blue-500 cursor-pointer transition-colors"
-                  >
-                    <Upload size={48} className="mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600">Click to upload images</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Select multiple images at once
-                    </p>
-                  </div>
-
-                  {message && (
-                    <p className="text-sm text-gray-500 mt-1">{message}</p>
-                  )}
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    // onChange={handleImageUpload}
-                    // onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </div>
-
-                {uploadedImages.length > 0 && (
-                  <div>{uploadedImages.length} images added</div>
-                  // <div>
-                  //   <h3 className="text-lg font-medium text-gray-700 mb-3">
-                  //     Preview ({uploadedImages.length} images)
-                  //   </h3>
-                  //   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  //     {uploadedImages.map((image, index) => (
-                  //       <div key={index} className="relative group">
-                  //         <img
-                  //           src={image}
-                  //           alt={`Page ${index + 1}`}
-                  //           className="w-full h-24 object-cover rounded-lg"
-                  //         />
-                  //         <button
-                  //           onClick={() => removeImage(index)}
-                  //           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  //         >
-                  //           <X size={12} />
-                  //         </button>
-                  //         <div className="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-xs px-1 rounded">
-                  //           {index + 1}
-                  //         </div>
-                  //       </div>
-                  //     ))}
-                  //   </div>
-                  // </div>
-                )}
-
-                <div className="flex gap-4">
-                  <button
-                    onClick={handleUpload}
-                    // onClick={handleImageUpload}
-                    // onClick={handleSaveFlipbook}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                  >
-                    <Save size={20} />
-                    {editingFlipbook
-                      ? "Update Flipbook"
-                      : uploading
-                      ? "Uploading..."
-                      : "Add Brochure"}
-
-                    {uploading && (
-                      <Loader2 size={20} className="animate-spin" />
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => setPopUpVisible(false)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-lg transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )
-        }
-
         {/* Play View */}
-        {currentView === "play" && playingFlipbook && (
+        {/* {currentView === "play" && playingFlipbook && (
           <div className="bg-white rounded-xl shadow-2xl p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">
@@ -575,7 +552,7 @@ const Admin = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

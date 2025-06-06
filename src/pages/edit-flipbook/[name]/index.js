@@ -26,8 +26,11 @@ import Image from "next/image";
 import { BASE_URL, USER_FACING_URL } from "../../../../constant";
 import YouTube from "react-youtube";
 import { handleShare } from "@/utilities/editFlipbook.helper.js";
+import useCheckAuthOnRoute from "@/hooks/useCheckAuthOnRoute";
 
 const EditFlipbook = () => {
+  const isUserLoggedIn = useCheckAuthOnRoute();
+
   const bookRef = useRef();
   const audioRef = useRef();
   const divRef = useRef();
@@ -95,8 +98,10 @@ const EditFlipbook = () => {
     try {
       const response = await fetch(
         `${BASE_URL}/brochure/brochure/${flipbookName}`
-      );
+      ); 
       const data = await response.json();
+      console.log(data,'data');
+      
       setFlipbookImages(data?.data?.images);
     } catch (error) {
       console.error("Error fetching flipbook data:", error);
@@ -616,6 +621,8 @@ const EditFlipbook = () => {
     if (!mediaUrl) {
       alert("add brochureName");
     }
+    console.log(mediaUrl);
+    
 
     setSelectedPoint(null);
     setActiveGotPoint(null);
@@ -644,6 +651,7 @@ const EditFlipbook = () => {
       console.error("Error:", err);
     }
   }
+
 
   async function deletePoints(pointId) {
     try {
@@ -802,6 +810,10 @@ const EditFlipbook = () => {
       setVideoIsPlaying(false);
     }
   };
+
+  if (!isUserLoggedIn) {
+    return null;
+  }
 
   return (
     <div className="h-svh  w-full flex flex-col overflow-hidden">
