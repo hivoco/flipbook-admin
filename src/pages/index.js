@@ -15,9 +15,9 @@ const LoginForm = () => {
   }, []);
 
   // useEffect(() => {
-  //   const data = JSON.parse(localStorage.getItem("isUserLoggedIn"));
+  //   const data = JSON.parse(localStorage.getItem("isUserLoggedIn") || "false");
   //   if (data) {
-  //     router.push("/admin");
+  //     router.replace("/admin");
   //   }
   // }, []);
 

@@ -9,9 +9,9 @@ import {
   ClipboardCheck,
   Copy,
   Fullscreen,
-  Link,
   Volume2,
   VolumeX,
+  Link,
   X,
   Play,
   Pause,
@@ -20,13 +20,19 @@ import {
   Trash2,
   CopyCheck,
   Share,
-  Share2, // Added for delete icon
+  Share2,
+  EllipsisVertical,
+  Link2,
+  Eye,
+  Link2Icon, // Added for delete icon
 } from "lucide-react";
 import Image from "next/image";
 import { BASE_URL, USER_FACING_URL } from "../../../../constant";
 import YouTube from "react-youtube";
 import { handleShare } from "@/utilities/editFlipbook.helper.js";
 import useCheckAuthOnRoute from "@/hooks/useCheckAuthOnRoute";
+import MenuPopup from "@/pages/components/MenuPopup";
+import EditPointModal from "@/pages/components/EditPointModal";
 
 const EditFlipbook = () => {
   const isUserLoggedIn = useCheckAuthOnRoute();
@@ -72,14 +78,16 @@ const EditFlipbook = () => {
   const [windowHeight, setWindowHeight] = useState(null);
   const [windowWidth, setWindowWidth] = useState(null);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const [mediaUrl, setMediaUrl] = useState();
 
-  //888888888888888888888
   const [showVideoPopup, setShowVideoPopup] = useState(false);
   const [currentVideoSrc, setCurrentVideoSrc] = useState("");
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [isYouTubeVideo, setIsYouTubeVideo] = useState(false);
   const [youtubePlayer, setYoutubePlayer] = useState(null);
+  const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
     setWindowHeight(window.innerHeight);
@@ -98,11 +106,12 @@ const EditFlipbook = () => {
     try {
       const response = await fetch(
         `${BASE_URL}/brochure/brochure/${flipbookName}`
-      ); 
+      );
       const data = await response.json();
-      console.log(data,'data');
-      
+      console.log(data, "getFlipbookImages");
+
       setFlipbookImages(data?.data?.images);
+      setIsLandscape(data?.data?.isLandScape);
     } catch (error) {
       console.error("Error fetching flipbook data:", error);
     }
@@ -480,83 +489,79 @@ const EditFlipbook = () => {
     );
   };
 
-  const EditPointModal = ({ point }) => {
-    const mediaUrlRef = useRef(null);
+  // const EditPointModal = ({ point }) => {
+  //   const mediaUrlRef = useRef(null);
 
-    useEffect(() => {
-      mediaUrlRef.current?.focus();
-    }, []);
+  //   useEffect(() => {
+  //     mediaUrlRef.current?.focus();
+  //   }, []);
 
-    const saveChanges = () => {
-      updatePoint(point.id, {
-        mediaUrl: mediaUrl,
-      });
+  //   const saveChanges = () => {
+  //     updatePoint(point.id, {
+  //       mediaUrl: mediaUrl,
+  //     });
 
-      setIsEditingPoint(null);
-    };
+  //     setIsEditingPoint(null);
+  //   };
 
-    return (
-      <div
-        className="fixed inset-0 bg-gray-800/35 flex items-center justify-center z-[60]"
-        onClick={() => setIsEditingPoint(null)}
-      >
-        <div
-          className="bg-white p-6 rounded-lg max-w-[250px] w-full  max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Edit Point</h3>
+  //   return (
+  //     <div
+  //       className="fixed inset-0 bg-gray-800/35 flex items-center justify-center z-[60]"
+  //       onClick={() => setIsEditingPoint(null)}
+  //     >
+  //       <div
+  //         className="bg-white p-6 rounded-lg max-w-[250px] w-full  max-h-[90vh] overflow-y-auto"
+  //         onClick={(e) => e.stopPropagation()}
+  //       >
+  //         <div className="flex justify-between items-center mb-4">
+  //           <h3 className="text-lg font-semibold">Edit Point</h3>
 
-            <button
-              onClick={() => setIsEditingPoint(null)}
-              className="text-gray-500 self-start hover:text-gray-700"
-            >
-              <X size={24} />
-            </button>
-          </div>
+  //           <button
+  //             onClick={() => setIsEditingPoint(null)}
+  //             className="text-gray-500 self-start hover:text-gray-700"
+  //           >
+  //             <X size={24} />
+  //           </button>
+  //         </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                <FileVideo size={16} className="inline mr-1" />
-                Media
-              </label>
-              <div className="space-y-2">
-                <input
-                  ref={mediaUrlRef}
-                  type="url"
-                  value={mediaUrl}
-                  onChange={(e) => {
-                    setMediaUrl(e.target.value);
-                  }}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter URL..."
-                />
-              </div>
-            </div>
-          </div>
+  //         <div className="space-y-4">
+  //           <label className="block text-sm font-medium mb-1">
+  //             <Link2 size={16} className="inline mr-1" />
+  //             Url
+  //           </label>
+  //           <input
+  //             ref={mediaUrlRef}
+  //             type="url"
+  //             value={mediaUrl}
+  //             onChange={(e) => {
+  //               setMediaUrl(e.target.value);
+  //             }}
+  //             className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+  //             placeholder="Enter URL..."
+  //           />
+  //         </div>
 
-          <div className="flex gap-2 mt-6">
-            <button
-              onClick={() => {
-                saveChanges();
-                addPoint();
-              }}
-              className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-            >
-              Save Changes
-            </button>
-            <button
-              onClick={() => deletePoint(point.id)}
-              className="px-4 bg-red-500 text-white py-2 rounded hover:bg-red-600"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  //         <div className="flex gap-2 mt-6">
+  //           <button
+  //             onClick={() => {
+  //               saveChanges();
+  //               addPoint();
+  //             }}
+  //             className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+  //           >
+  //             Save Changes
+  //           </button>
+  //           <button
+  //             onClick={() => deletePoint(point.id)}
+  //             className="px-4 bg-red-500 text-white py-2 rounded hover:bg-red-600"
+  //           >
+  //             Delete
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   const PointPopover = ({ point }) => (
     <div
@@ -622,7 +627,6 @@ const EditFlipbook = () => {
       alert("add brochureName");
     }
     console.log(mediaUrl);
-    
 
     setSelectedPoint(null);
     setActiveGotPoint(null);
@@ -651,7 +655,6 @@ const EditFlipbook = () => {
       console.error("Error:", err);
     }
   }
-
 
   async function deletePoints(pointId) {
     try {
@@ -815,6 +818,26 @@ const EditFlipbook = () => {
     return null;
   }
 
+  async function updateUser() {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/brochure/brochure/${flipbookName}/toggle-landscape`,
+        {
+          method: "PATCH",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json(); // or response.text() if not JSON
+      return data;
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+  }
+
   return (
     <div className="h-svh  w-full flex flex-col overflow-hidden">
       <div className="relative w-full flex-1 max-w-6xl mx-auto">
@@ -851,12 +874,13 @@ const EditFlipbook = () => {
                 startPage={0}
                 autoSize={true}
                 useMouseEvents={false}
-                className="w-full h-auto max-w-full max-h-full "
+                className="w-full h-auto max-w-full max-h-full"
+                // doesnt feel like they are doing anything
               >
                 {flipbookImages?.map((imageSrc, index) => (
                   <div
                     key={index}
-                    className="relative bg-white overflow-hidden  w-full h-full self-center flex justify-center"
+                    className="relative bg-white overflow-hidden  w-full h-full self-center flex justify-center "
                   >
                     <Image
                       src={imageSrc}
@@ -1110,7 +1134,7 @@ const EditFlipbook = () => {
               </div>
             )}
 
-            <button
+            {/* <button
               onClick={() => handleCopyURL()}
               className="text-white p-1 md:p-3 hover:bg-gray-700 re"
             >
@@ -1122,6 +1146,20 @@ const EditFlipbook = () => {
                 )}
               </span>
             </button>
+ */}
+
+            <a
+              href={`${USER_FACING_URL}/${flipbookName}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <button
+                className="p-1 md:p-3 hover:bg-gray-700"
+                aria-label="preview flipbook in new page"
+              >
+                <Eye size={28} color="white" />
+              </button>
+            </a>
 
             <button
               onClick={() => handleShare(`${USER_FACING_URL}/${flipbookName}`)}
@@ -1129,13 +1167,34 @@ const EditFlipbook = () => {
             >
               <Share2 size={28} />
             </button>
+
+            <button
+              className="p-1 md:p-3 hover:bg-gray-700"
+              onClick={() => {
+                setMenuOpen((prev) => !prev);
+              }}
+              aria-label="More options"
+            >
+              <EllipsisVertical size={28} color="white" />
+            </button>
           </div>
         </div>
       </div>
 
       {/* Edit Modal */}
       {isEditingPoint && (
-        <EditPointModal point={findPointById(isEditingPoint)} />
+        <EditPointModal
+          point={findPointById(isEditingPoint)}
+          mediaUrl={mediaUrl}
+          setMediaUrl={setMediaUrl}
+          updatePoint={updatePoint}
+          addPoint={addPoint}
+          setIsEditingPoint={setIsEditingPoint}
+          deletePoint={deletePoint}
+          flipbookName={flipbookName}
+          clickedImageIndex={clickedImageIndex}
+          currentCordinate={currentCordinate}
+        />
       )}
 
       <audio ref={audioRef} src={audioSrc ? audioSrc : null}></audio>
@@ -1200,6 +1259,15 @@ const EditFlipbook = () => {
             )}
           </div>
         </>
+      )}
+
+      {menuOpen && (
+        <MenuPopup
+          menuOpen={menuOpen}
+          setMenuOpen={setMenuOpen}
+          updateUser={updateUser}
+          isLandscape={isLandscape}
+        />
       )}
     </div>
   );
