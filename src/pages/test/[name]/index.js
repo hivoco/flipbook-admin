@@ -1089,7 +1089,7 @@ const EditFlipbook = () => {
                       onClick={() => setPopUpVisible(false)}
                       className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm transition-colors"
                     >
-                      Cancle
+                      Cancel
                     </button>
                   </div>
                 </div>

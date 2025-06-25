@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X, Monitor, Smartphone } from "lucide-react";
 import SwitchButton from "./SwitchButton";
+import PlaySound from "./PlaySound";
 
 export default function MenuPopup({
   menuOpen,
@@ -9,7 +10,7 @@ export default function MenuPopup({
   isLandscape,
 }) {
   const togglePopup = () => setMenuOpen(!menuOpen);
-
+  const [enabled, setEnabled] = useState(false);
   return (
     <div className=" flex items-center justify-center p-4">
       {/* Popup Overlay */}
@@ -68,13 +69,16 @@ export default function MenuPopup({
                 </div>
               </div>
 
-              {/* <div className="flex items-center gap-3">
-                <SwitchButton />
+              <div className="flex items-center gap-3">
+                <SwitchButton enabled={enabled} setEnabled={setEnabled}/>
+                <PlaySound enabled={enabled}/>
+                
 
                 <label className="block text-sm font-medium text-gray-700">
                   Page Flip Sound
                 </label>
-              </div> */}
+
+              </div>
             </div>
           </div>
         </div>

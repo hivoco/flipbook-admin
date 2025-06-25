@@ -1,8 +1,7 @@
 import { Switch } from "@headlessui/react";
 import { useState } from "react";
 
-export default function SwitchButton() {
-  const [enabled, setEnabled] = useState(false);
+export default function SwitchButton({enabled,setEnabled}) {
 
   return (
     <Switch
