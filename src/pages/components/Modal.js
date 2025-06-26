@@ -1,12 +1,13 @@
 import { Button, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 
 export default function Modal({
-  title,
-  subText,
-  selectionButtonText,
   isOpen,
   setIsOpen,
-  mainButtonFunction
+  selectionButtonText,
+  subText,
+
+  title,
+  mainButtonFunction,
 }) {
   function open() {
     setIsOpen(true);
@@ -19,7 +20,7 @@ export default function Modal({
   return (
     <>
       <Dialog
-        open={isOpen}
+        open={isOpen || false}
         as="div"
         className="relative z-10 focus:outline-none"
         onClose={close}
@@ -40,7 +41,7 @@ export default function Modal({
               <p className="mt-2 text-sm/6 text-gray-400">{subText}</p>
               <div className="mt-4 flex items-center justify-end gap-4">
                 <Button
-                  className="inline-flex items-center gap-2 rounded-md bg-gray-700 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-600 data-open:bg-gray-700"
+                  className="inline-flex items-center gap-2 rounded-md bg-red-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-red-700 data-open:bg-gray-700"
                   onClick={mainButtonFunction}
                 >
                   {selectionButtonText}

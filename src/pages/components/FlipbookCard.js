@@ -3,8 +3,12 @@ import { BookOpen, MoreVertical } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import Modal from "./Modal";
+// import Modal from "./Modal";
+
 import { BASE_URL } from "../../../constant";
+import dynamic from "next/dynamic";
+const Modal = dynamic(() => import("./Modal"), { ssr: false });
+
 
 const FlipbookCard = ({ flipbook, id, getAllBrocchures }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -65,7 +69,7 @@ const FlipbookCard = ({ flipbook, id, getAllBrocchures }) => {
 
           {isOpen && (
             <Modal
-              isOpen={isOpen}
+              isOpen={isOpen || false}
               setIsOpen={setIsOpen}
               selectionButtonText={"Delete"}
               subText={

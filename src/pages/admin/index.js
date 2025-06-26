@@ -246,7 +246,7 @@ const Admin = () => {
             </div>
           </div>
         )}
-        <Pagination />
+        {/* <Pagination /> */}
       </div>
     </div>
   );
