@@ -33,6 +33,7 @@ import { handleShare } from "@/utilities/editFlipbook.helper.js";
 import useCheckAuthOnRoute from "@/hooks/useCheckAuthOnRoute";
 import MenuPopup from "@/pages/components/MenuPopup";
 import EditPointModal from "@/pages/components/EditPointModal";
+import { faL } from "@fortawesome/free-solid-svg-icons";
 
 const EditFlipbook = () => {
   const isUserLoggedIn = useCheckAuthOnRoute();
@@ -87,7 +88,9 @@ const EditFlipbook = () => {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [isYouTubeVideo, setIsYouTubeVideo] = useState(false);
   const [youtubePlayer, setYoutubePlayer] = useState(null);
+
   const [isLandscape, setIsLandscape] = useState(false);
+  const [isPageFlipSoundOn, setIsPageFlipSoundOn] = useState(false);
 
   useEffect(() => {
     setWindowHeight(window.innerHeight);
@@ -112,6 +115,7 @@ const EditFlipbook = () => {
 
       setFlipbookImages(data?.data?.images);
       setIsLandscape(data?.data?.isLandScape);
+      setIsPageFlipSoundOn(data?.data?.pageFlipSound);
     } catch (error) {
       console.error("Error fetching flipbook data:", error);
     }
@@ -818,19 +822,29 @@ const EditFlipbook = () => {
     return null;
   }
 
-  async function updateUser() {
+  async function updateValues(endpoint) {
     try {
       const response = await fetch(
-        `${BASE_URL}/brochure/brochure/${flipbookName}/toggle-landscape`,
+        `${BASE_URL}/brochure/brochure/${flipbookName}/`,
         {
           method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            [endpoint]:
+              endpoint.toLowerCase() === "isLandScape".toLowerCase()
+                ? !isLandscape
+                : !isPageFlipSoundOn,
+          }),
         }
       );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json(); // or response.text() if not JSON
+      const data = await response.json();
+      getFlipbookImages();
       return data;
     } catch (error) {
       console.error("Error updating user:", error);
@@ -1265,8 +1279,9 @@ const EditFlipbook = () => {
         <MenuPopup
           menuOpen={menuOpen}
           setMenuOpen={setMenuOpen}
-          updateUser={updateUser}
+          updateValues={updateValues}
           isLandscape={isLandscape}
+          isPageFlipSoundOn={isPageFlipSoundOn}
         />
       )}
     </div>

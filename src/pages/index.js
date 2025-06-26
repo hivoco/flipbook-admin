@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { EMAIL, PASSWORD } from "../../constant";
 import { useRouter } from "next/router";
+import NotificationBanner from "./components/NotificationBanner";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -14,12 +15,12 @@ const LoginForm = () => {
     emailRef.current.focus();
   }, []);
 
-  // useEffect(() => {
-  //   const data = JSON.parse(localStorage.getItem("isUserLoggedIn") || "false");
-  //   if (data) {
-  //     router.replace("/admin");
-  //   }
-  // }, []);
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("isUserLoggedIn") || "false");
+    if (data) {
+      router.push("/admin");
+    }
+  }, [router]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

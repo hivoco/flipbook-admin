@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { X, Monitor, Smartphone } from "lucide-react";
+import { X } from "lucide-react";
 import SwitchButton from "./SwitchButton";
 import PlaySound from "./PlaySound";
 
 export default function MenuPopup({
   menuOpen,
   setMenuOpen,
-  updateUser,
+  updateValues,
   isLandscape,
+  isPageFlipSoundOn,
 }) {
   const togglePopup = () => setMenuOpen(!menuOpen);
-  const [enabled, setEnabled] = useState(false);
   return (
     <div className=" flex items-center justify-center p-4">
       {/* Popup Overlay */}
@@ -32,11 +32,23 @@ export default function MenuPopup({
             <div className="p-6 space-y-6">
               {/* Orientation Setting */}
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">
-                  Display Orientation
-                </label>
-                <div className="flex gap-3">
-                  <button
+                <div className="flex gap-3 items-center">
+                  <SwitchButton
+                    enabled={isLandscape}
+                    setEnabled={() => updateValues("isLandScape")}
+                  />
+                  <label
+                    title={
+                      isLandscape
+                        ? "single page wide "
+                        : " two pages side by side tall"
+                    }
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    {isLandscape ? "Landscape" : "Portrait"}
+                  </label>
+
+                  {/* <button
                     onClick={() => {
                       updateUser();
                       togglePopup();
@@ -65,19 +77,24 @@ export default function MenuPopup({
                   >
                     <Monitor className="w-5 h-5" />
                     Landscape
-                  </button>
+                  </button> */}
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <SwitchButton enabled={enabled} setEnabled={setEnabled}/>
-                <PlaySound enabled={enabled}/>
-                
+                <SwitchButton
+                  enabled={isPageFlipSoundOn}
+                  setEnabled={() => {
+                    updateValues("pageFlipSound");
+                  }}
+                />
 
-                <label className="block text-sm font-medium text-gray-700">
-                  Page Flip Sound
+                <label
+                  title="Turns on the page flip sound"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Page Sound
                 </label>
-
               </div>
             </div>
           </div>
