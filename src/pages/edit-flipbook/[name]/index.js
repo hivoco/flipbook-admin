@@ -34,6 +34,8 @@ import useCheckAuthOnRoute from "@/hooks/useCheckAuthOnRoute";
 import MenuPopup from "@/pages/components/MenuPopup";
 import EditPointModal from "@/pages/components/EditPointModal";
 import { faL } from "@fortawesome/free-solid-svg-icons";
+import GenrateLinkPopup from "@/pages/components/GenerateLinkPopup";
+import GenerateLinkPopup from "@/pages/components/GenerateLinkPopup";
 
 const EditFlipbook = () => {
   const isUserLoggedIn = useCheckAuthOnRoute();
@@ -97,11 +99,8 @@ const EditFlipbook = () => {
     setWindowWidth(window.innerWidth);
   }, []);
 
-  const options = ["Male", "Female"];
-
   useEffect(() => {
     const name = window.location.pathname.split("/").pop();
-
     setFlipbookName(name);
   }, []);
 
@@ -229,15 +228,16 @@ const EditFlipbook = () => {
     }
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (string) => {
     try {
-      await navigator.clipboard.writeText(audioSrc);
+      await navigator.clipboard.writeText(string);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
     }
   };
+
   const handleCopyURL = async () => {
     try {
       await navigator.clipboard.writeText(`${USER_FACING_URL}/${flipbookName}`);
@@ -493,80 +493,6 @@ const EditFlipbook = () => {
     );
   };
 
-  // const EditPointModal = ({ point }) => {
-  //   const mediaUrlRef = useRef(null);
-
-  //   useEffect(() => {
-  //     mediaUrlRef.current?.focus();
-  //   }, []);
-
-  //   const saveChanges = () => {
-  //     updatePoint(point.id, {
-  //       mediaUrl: mediaUrl,
-  //     });
-
-  //     setIsEditingPoint(null);
-  //   };
-
-  //   return (
-  //     <div
-  //       className="fixed inset-0 bg-gray-800/35 flex items-center justify-center z-[60]"
-  //       onClick={() => setIsEditingPoint(null)}
-  //     >
-  //       <div
-  //         className="bg-white p-6 rounded-lg max-w-[250px] w-full  max-h-[90vh] overflow-y-auto"
-  //         onClick={(e) => e.stopPropagation()}
-  //       >
-  //         <div className="flex justify-between items-center mb-4">
-  //           <h3 className="text-lg font-semibold">Edit Point</h3>
-
-  //           <button
-  //             onClick={() => setIsEditingPoint(null)}
-  //             className="text-gray-500 self-start hover:text-gray-700"
-  //           >
-  //             <X size={24} />
-  //           </button>
-  //         </div>
-
-  //         <div className="space-y-4">
-  //           <label className="block text-sm font-medium mb-1">
-  //             <Link2 size={16} className="inline mr-1" />
-  //             Url
-  //           </label>
-  //           <input
-  //             ref={mediaUrlRef}
-  //             type="url"
-  //             value={mediaUrl}
-  //             onChange={(e) => {
-  //               setMediaUrl(e.target.value);
-  //             }}
-  //             className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-  //             placeholder="Enter URL..."
-  //           />
-  //         </div>
-
-  //         <div className="flex gap-2 mt-6">
-  //           <button
-  //             onClick={() => {
-  //               saveChanges();
-  //               addPoint();
-  //             }}
-  //             className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-  //           >
-  //             Save Changes
-  //           </button>
-  //           <button
-  //             onClick={() => deletePoint(point.id)}
-  //             className="px-4 bg-red-500 text-white py-2 rounded hover:bg-red-600"
-  //           >
-  //             Delete
-  //           </button>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // };
-
   const PointPopover = ({ point }) => (
     <div
       className="absolute bg-white border border-gray-300 rounded-lg shadow-lg p-3 min-w-48 z-50"
@@ -604,7 +530,6 @@ const EditFlipbook = () => {
       </div>
     </div>
   );
-
   const [gotPoints, setGotPoints] = useState([]);
 
   const getPoints = async () => {
@@ -630,7 +555,6 @@ const EditFlipbook = () => {
     if (!mediaUrl) {
       alert("add brochureName");
     }
-    console.log(mediaUrl);
 
     setSelectedPoint(null);
     setActiveGotPoint(null);
@@ -818,10 +742,6 @@ const EditFlipbook = () => {
     }
   };
 
-  if (!isUserLoggedIn) {
-    return null;
-  }
-
   async function updateValues(endpoint) {
     try {
       const response = await fetch(
@@ -850,6 +770,10 @@ const EditFlipbook = () => {
       console.error("Error updating user:", error);
       throw error;
     }
+  }
+
+  if (!isUserLoggedIn) {
+    return null;
   }
 
   return (
@@ -1069,98 +993,96 @@ const EditFlipbook = () => {
             </button>
 
             {popUpVisible && (
-              <div className="absolute bottom-15 right-0 min-w-[320px] max-w-lg bg-white rounded-xl shadow-xl p-4">
-                <div className="flex justify-end mb-4">
-                  <button
-                    onClick={() => setPopUpVisible(false)}
-                    className="text-white p-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
+              <GenerateLinkPopup
+                setPopUpVisible={setPopUpVisible}
+                text={text}
+                setText={setText}
+                setGender={setGender}
+                handleConvertToAudio={handleConvertToAudio}
+                gender={gender}
+                audioSrc={audioSrc}
+                handleCopy={handleCopy}
+                copied={copied}
+                flipbookName={flipbookName}
+              />
+              // <div className="absolute bottom-15 right-0 min-w-[320px] max-w-lg bg-white rounded-xl shadow-xl p-4">
+              //   <div className="flex justify-end mb-4">
+              //     <button
+              //       onClick={() => setPopUpVisible(false)}
+              //       className="text-white p-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+              //     >
+              //       <X size={20} />
+              //     </button>
+              //   </div>
 
-                <div className="space-y-4">
-                  <textarea
-                    id="controlled-textarea"
-                    value={text}
-                    onChange={handleChange}
-                    placeholder="Type Audio Text..."
-                    rows={4}
-                    required
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+              //   <div className="space-y-4">
+              //     <textarea
+              //       id="controlled-textarea"
+              //       value={text}
+              //       onChange={handleChange}
+              //       placeholder="Type Audio Text..."
+              //       rows={4}
+              //       required
+              //       className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              //     />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Audio Gender
-                    </label>
-                    <div className="flex gap-2">
-                      {options.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          className={`px-3 py-1.5 text-sm rounded-full border-2 transition-colors ${
-                            gender === option
-                              ? "bg-blue-500 text-white border-blue-500"
-                              : "bg-white text-gray-700 border-gray-300"
-                          }`}
-                          onClick={() => setGender(option)}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+              //     <div>
+              //       <label className="block text-sm font-medium text-gray-700 mb-2">
+              //         Select Audio Gender
+              //       </label>
+              //       <div className="flex gap-2">
+              //         {options.map((option) => (
+              //           <button
+              //             key={option}
+              //             type="button"
+              //             className={`px-3 py-1.5 text-sm rounded-full border-2 transition-colors ${
+              //               gender === option
+              //                 ? "bg-blue-500 text-white border-blue-500"
+              //                 : "bg-white text-gray-700 border-gray-300"
+              //             }`}
+              //             onClick={() => setGender(option)}
+              //           >
+              //             {option}
+              //           </button>
+              //         ))}
+              //       </div>
+              //     </div>
 
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleConvertToAudio}
-                      className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
-                    >
-                      <AudioWaveform size={18} /> Convert to Audio
-                    </button>
-                    <button
-                      onClick={() => setPopUpVisible(false)}
-                      className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
+              //     <div className="flex gap-3">
+              //       <button
+              //         onClick={handleConvertToAudio}
+              //         className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
+              //       >
+              //         <AudioWaveform size={18} /> Convert to Audio
+              //       </button>
+              //       <button
+              //         onClick={() => setPopUpVisible(false)}
+              //         className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm transition-colors"
+              //       >
+              //         Cancel
+              //       </button>
+              //     </div>
+              //   </div>
 
-                {audioSrc && (
-                  <div
-                    onClick={handleCopy}
-                    className="flex items-center gap-2 mt-4 cursor-pointer"
-                  >
-                    <p className="text-gray-800 text-sm px-3 py-2 bg-white rounded-lg border flex-1 overflow-hidden">
-                      {audioSrc}
-                    </p>
-                    <span className="text-gray-600">
-                      {copied ? (
-                        <ClipboardCheck size={20} />
-                      ) : (
-                        <Copy size={20} />
-                      )}
-                    </span>
-                  </div>
-                )}
-              </div>
+              //   {audioSrc && (
+              //     <div
+              //       onClick={handleCopy}
+              //       className="flex items-center gap-2 mt-4 cursor-pointer"
+              //     >
+              //       <p className="text-gray-800 text-sm px-3 py-2 bg-white rounded-lg border flex-1 overflow-hidden">
+              //         {audioSrc}
+              //       </p>
+              //       <span className="text-gray-600">
+              //         {copied ? (
+              //           <ClipboardCheck size={20} />
+              //         ) : (
+              //           <Copy size={20} />
+              //         )}
+              //       </span>
+              //     </div>
+              //   )}
+              // </div>
             )}
-
-            {/* <button
-              onClick={() => handleCopyURL()}
-              className="text-white p-1 md:p-3 hover:bg-gray-700 re"
-            >
-              <span className="text-gray-600">
-                {copied ? (
-                  <ClipboardCheck color="white" size={28} />
-                ) : (
-                  <Copy color="white" size={28} />
-                )}
-              </span>
-            </button>
- */}
 
             <a
               href={`${USER_FACING_URL}/${flipbookName}`}

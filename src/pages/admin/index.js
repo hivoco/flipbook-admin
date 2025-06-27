@@ -23,6 +23,9 @@ import Pagination from "../components/Pagination";
 
 const Admin = () => {
   const [flipbooks, setFlipbooks] = useState([]);
+  const [pageNumber, setPageNumber] = useState(1); // 1st page by defualt 10
+  const [cardsLimit, setCardsLimit] = useState(10);
+  const [paginationInfo, setPaginationInfo] = useState(null);
 
   const [editingFlipbook, setEditingFlipbook] = useState(null);
   // const [playingFlipbook, setPlayingFlipbook] = useState(null);
@@ -104,15 +107,19 @@ const Admin = () => {
   };
 
   const getAllBrocchures = async () => {
-    const res = await fetch(`${BASE_URL}/brochure/brochures`);
+    const res = await fetch(
+      `${BASE_URL}/brochure/brochures?page=${pageNumber}&limit=${cardsLimit}`
+    );
     const data = await res.json();
+    setPaginationInfo(data?.data?.pagination);
+
     setFlipbooks(data?.data?.brochures);
-    console.log(data, "data");
+    // console.log(data, "data");
   };
 
   useEffect(() => {
     getAllBrocchures();
-  }, []);
+  }, [pageNumber, cardsLimit]);
 
   if (!isUserLoggedIn) {
     return null;
@@ -137,16 +144,14 @@ const Admin = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-20">
-            {flipbooks?.map((flipbook, id) =>
-              id < 10 ? (
-                <FlipbookCard
-                  id={id}
-                  key={flipbook?._id}
-                  flipbook={flipbook}
-                  getAllBrocchures={getAllBrocchures}
-                />
-              ) : null
-            )}
+            {flipbooks?.map((flipbook, id) => (
+              <FlipbookCard
+                id={id}
+                key={flipbook?._id}
+                flipbook={flipbook}
+                getAllBrocchures={getAllBrocchures}
+              />
+            ))}
           </div>
 
           {flipbooks.length == 0 && <SkeletonGrid />}
@@ -246,7 +251,15 @@ const Admin = () => {
             </div>
           </div>
         )}
-        {/* <Pagination /> */}
+
+        {paginationInfo && (
+          <Pagination
+            setCardsLimit={setCardsLimit}
+            setPageNumber={setPageNumber}
+            cardsLimit={cardsLimit}
+            paginationInfo={paginationInfo}
+          />
+        )}
       </div>
     </div>
   );
