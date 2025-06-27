@@ -8,6 +8,9 @@ export default function Pagination({
   cardsLimit,
   paginationInfo,
 }) {
+  
+  if (!paginationInfo) return null;
+
   const { currentPage, hasNext, totalPages, hasPrev, totalCount } =
     paginationInfo;
 

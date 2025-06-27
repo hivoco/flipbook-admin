@@ -75,8 +75,8 @@ export default function ErrorPage() {
             Oops! Page Not Found
           </h2>
           <p className="text-lg text-white/90 max-w-md mx-auto animate-fade-in-up delay-500 drop-shadow-md">
-            The page you're looking for seems to have vanished into the digital
-            void. Don't worry, it happens to the best of us.
+            The page you&apos;re looking for seems to have vanished into the digital
+            void. Don&apost;t worry, it happens to the best of us.
           </p>
         </div>
 
