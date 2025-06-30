@@ -3,11 +3,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import HTMLFlipBook from "react-pageflip";
 import {
-  AudioWaveform,
   ChevronLeft,
   ChevronRight,
-  ClipboardCheck,
-  Copy,
   Fullscreen,
   Volume2,
   VolumeX,
@@ -16,15 +13,10 @@ import {
   Play,
   Pause,
   Edit3,
-  FileVideo,
-  Trash2,
-  CopyCheck,
-  Share,
   Share2,
   EllipsisVertical,
-  Link2,
   Eye,
-  Link2Icon, // Added for delete icon
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { BASE_URL, USER_FACING_URL } from "../../../../constant";
@@ -33,8 +25,6 @@ import { handleShare } from "@/utilities/editFlipbook.helper.js";
 import useCheckAuthOnRoute from "@/hooks/useCheckAuthOnRoute";
 import MenuPopup from "@/pages/components/MenuPopup";
 import EditPointModal from "@/pages/components/EditPointModal";
-import { faL } from "@fortawesome/free-solid-svg-icons";
-import GenrateLinkPopup from "@/pages/components/GenerateLinkPopup";
 import GenerateLinkPopup from "@/pages/components/GenerateLinkPopup";
 
 const EditFlipbook = () => {
@@ -250,15 +240,14 @@ const EditFlipbook = () => {
 
   // Interactive Points Functions
   const handleImageClick = (e, pageIndex) => {
+    console.log("handleImageClick");
+
     setClickedImageIndex(pageIndex + 1);
 
     const rect = e.target.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setCurrentCordinate({
-      x: x,
-      y: y,
-    });
+    setCurrentCordinate({ x: x, y: y }); // sending this to backend
 
     const newPoint = {
       id: Date.now(),
@@ -558,6 +547,7 @@ const EditFlipbook = () => {
 
     setSelectedPoint(null);
     setActiveGotPoint(null);
+
     try {
       const res = await fetch(`${BASE_URL}/link/media-link`, {
         method: "POST",
@@ -576,8 +566,14 @@ const EditFlipbook = () => {
       });
 
       const data = await res.json();
+      if (isEditingPoint) {
+        deletePoint(isEditingPoint); // Remove from local points state
+        setIsEditingPoint(null);
+      }
+      // removes current saved point to backend 
 
-      getPoints();
+      // setPoints({}); remove all red points filled unfilled both
+      await getPoints();
       console.log(data, "added point");
     } catch (err) {
       console.error("Error:", err);
@@ -917,7 +913,6 @@ const EditFlipbook = () => {
                             }}
                             onClick={(e) => handlePointClick(e, point)}
                           />
-
                           {selectedPoint === point.id && (
                             <PointPopover point={point} />
                           )}

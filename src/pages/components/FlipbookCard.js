@@ -9,7 +9,6 @@ import { BASE_URL } from "../../../constant";
 import dynamic from "next/dynamic";
 const Modal = dynamic(() => import("./Modal"), { ssr: false });
 
-
 const FlipbookCard = ({ flipbook, id, getAllBrocchures }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -18,24 +17,25 @@ const FlipbookCard = ({ flipbook, id, getAllBrocchures }) => {
       method: "DELETE",
     });
     const data = await res.json();
-    console.log(data);
     setIsOpen(false);
     getAllBrocchures(); // get updated list of cards since one is deleted
   };
 
+  const firstImageLink = (imageArr) =>
+    imageArr.find((u) => /1\.(jpg|png)$/.test(u));
   return (
     <Link href={`/edit-flipbook/${flipbook?.name}`}>
       <div className="bg-white relative rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
         <div className="relative h-36  bg-gray-100 ">
           {flipbook?.images?.length > 0 ? (
             <Image
-              src={flipbook?.images[0]}
+              src={firstImageLink(flipbook.images) || flipbook?.images[0]}
               alt={flipbook?.displayName || "Flipbook Image"}
               className="w-full h-full object-cover"
               width={600}
               height={600}
-              fetchPriority={id < 6 ? "high" : ""}
-              priority={id < 6}
+              fetchPriority={"high"}
+              priority={true}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400">

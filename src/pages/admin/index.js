@@ -12,17 +12,17 @@ import {
   Loader2,
   Search,
 } from "lucide-react";
-import Image from "next/image";
 import { BASE_URL, employeeArray } from "../../../constant";
-import Link from "next/link";
 import useCheckAuthOnRoute from "@/hooks/useCheckAuthOnRoute";
 import SearchFlipbook from "../components/SearchFlipbook";
 import SkeletonGrid from "../components/SkeletonGrid";
 import FlipbookCard from "../components/FlipbookCard";
 import Pagination from "../components/Pagination";
+import FilterByPerson from "../components/FilterByPerson";
 
 const Admin = () => {
   const [flipbooks, setFlipbooks] = useState([]);
+  const [filteredFlipbooks, setFilteredFlipbooks] = useState([]);
   const [pageNumber, setPageNumber] = useState(1); // 1st page by defualt 10
   const [cardsLimit, setCardsLimit] = useState(10);
   const [paginationInfo, setPaginationInfo] = useState(null);
@@ -96,7 +96,7 @@ const Admin = () => {
       setPopUpVisible(false);
       getAllBrocchures();
       setPopUpVisible(false);
-      console.log("Server response:", data);
+      // console.log("Server response:", data);
       setSelectedFiles([]);
     } catch (err) {
       console.error(err);
@@ -114,6 +114,7 @@ const Admin = () => {
     setPaginationInfo(data?.data?.pagination);
 
     setFlipbooks(data?.data?.brochures);
+    setFilteredFlipbooks(data?.data?.brochures);
     // console.log(data, "data");
   };
 
@@ -133,6 +134,11 @@ const Admin = () => {
               Flipbook Creator
             </h2>
 
+            <FilterByPerson
+            flipbooks={flipbooks}
+              setFilteredFlipbooks={setFilteredFlipbooks}
+            />
+
             {/* <SearchFlipbook /> */}
             <button
               onClick={handleCreateNew}
@@ -144,7 +150,7 @@ const Admin = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-20">
-            {flipbooks?.map((flipbook, id) => (
+            {filteredFlipbooks?.map((flipbook, id) => (
               <FlipbookCard
                 id={id}
                 key={flipbook?._id}
