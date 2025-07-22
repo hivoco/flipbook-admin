@@ -13,7 +13,7 @@ import { BASE_URL, USER_FACING_URL } from "../../../../constant";
 import MenuPopup from "@/pages/components/MenuPopup";
 import EditPointModal from "@/pages/components/EditPointModal";
 import GenerateLinkPopup from "@/pages/components/GenerateLinkPopup";
-import BottomMenuBar from "@/pages/components/BottomMenuBar";
+// import BottomMenuBar from "@/pages/components/BottomMenuBar";
 import Loading from "@/pages/components/Loading";
 
 const EditFlipbook = () => {
@@ -1014,7 +1014,7 @@ const EditFlipbook = () => {
             </div>
           </div>
 
-          <BottomMenuBar
+          {/* <BottomMenuBar
             isFullscreen={isFullscreen}
             displayPageNumInBar={displayPageNumInBar}
             currentPage={currentPage}
@@ -1026,7 +1026,7 @@ const EditFlipbook = () => {
             toggleFullscreen={toggleFullscreen}
             setPopUpVisible={setPopUpVisible}
             setMenuOpen={setMenuOpen}
-          />
+          /> */}
         </div>
       </div>
 

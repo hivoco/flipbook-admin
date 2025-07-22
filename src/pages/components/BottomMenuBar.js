@@ -27,8 +27,12 @@ const BottomMenuBar = ({
   setPopUpVisible,
   setMenuOpen,
 }) => {
-    
   const [visible, setVisible] = useState(false);
+  if (typeof displayPageNumInBar !== "function") {
+    console.error("displayPageNumInBar is not a function");
+    return null;
+  }
+
   return (
     <div
       onClick={() => {
