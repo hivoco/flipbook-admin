@@ -142,7 +142,7 @@ const Admin = () => {
             {/* <SearchFlipbook /> */}
             <button
               onClick={handleCreateNew}
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transform hover:scale-105 transition-all duration-200 shadow-lg"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transform hover:scale-105 transition-all duration-200 shadow-lg"
             >
               <Plus size={20} />
               Create New Flipbook

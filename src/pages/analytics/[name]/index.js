@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   LineChart,
@@ -15,6 +16,7 @@ import {
   AreaChart,
   Area,
 } from "recharts";
+
 import {
   Calendar,
   Users,
@@ -33,16 +35,57 @@ import {
   ArrowLeft,
   Filter,
 } from "lucide-react";
+import { BASE_URL } from "../../../../constant";
+import { useTime } from "framer-motion";
+import { useRouter } from "next/router";
+import { useSelectedLayoutSegment } from "next/navigation";
 
 const FlipbookAnalyticsDashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("7d");
   const [selectedDateRange, setSelectedDateRange] = useState({
     start: "",
     end: "",
-  });
+  })
+
+  const [sessionData, setSessionData] = useState([]);
+  const [visitorsData, setVisitorsData] = useState([]);
+  const [engagementData, setEngagementData] = useState(null);
+  const [visitorTrends, setVisitorTrends] = useState(null);
+  const [pagesAnalytics, setPagesAnalytics] = useState(null);
+  const [mostClickedButtons, setMostClickedButtons] = useState(null);
+  const [geographyInfo, setGeographyInfo] = useState(null);
+  const [sources, setSources] = useState(null);
+  const colorArray = [
+    "#4F46E5", // Indigo
+    "#10B981", // Emerald
+    "#F59E0B", // Amber
+    "#EF4444", // Red
+    "#3B82F6", // Blue
+    "#8B5CF6", // Violet
+    "#EC4899", // Pink
+    "#22D3EE", // Cyan
+  ];
+
   const [flipbookId] = useState("brochure_1");
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+
+  const [flipbookName, setFlipbookName] = useState("");
+
+  const router = useRouter();
+  console.log(flipbookName);
+
+  useEffect(() => {
+    if (router.isReady && router.asPath) {
+      setFlipbookName(router.asPath.split("/").pop());
+    }
+  }, [router.isReady, router.asPath]);
+
+  // async function getData() {
+  //   const response = await fetch("getData/route1");
+  //   const data = await response.json();
+  //   SetData(data);
+  // }
 
   // Enhanced mock data
   const [dashboardData, setDashboardData] = useState({
@@ -180,18 +223,19 @@ const FlipbookAnalyticsDashboard = () => {
 
   const formatDuration = (seconds) => {
     const mins = Math.floor(seconds / 60);
+
     const secs = seconds % 60;
     return `${mins}m ${secs}s`;
   };
 
   const formatNumber = (num) => {
     if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + "M";
+      return (num / 1000000)?.toFixed(1) + "M";
     }
     if (num >= 1000) {
-      return (num / 1000).toFixed(1) + "k";
+      return (num / 1000)?.toFixed(1) + "k";
     }
-    return num.toString();
+    return num?.toString();
   };
 
   // Generate different data based on selected period
@@ -278,10 +322,135 @@ const FlipbookAnalyticsDashboard = () => {
 
   const currentData = getFilteredData();
 
+  const getSessionData = async () => {
+    try {
+      const res = await fetch(
+        BASE_URL + "/user/session-stats?flipbookId=" + flipbookName
+      );
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      console.log(data);
+      setSessionData(data);
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
+
+  const getVisitorData = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:8831/user/visitors?flipbookId=" + flipbookName
+      );
+      const data = await res.json();
+      setVisitorsData(data);
+    } catch (err) {
+      console.error("Error fetching visitor data:", err);
+    }
+  };
+
+  const getEngagementData = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:8831/user/engagement?flipbookId=" + flipbookName
+      );
+      const data = await res.json();
+      setEngagementData(data);
+    } catch (err) {
+      console.error("Error fetching engagement data:", err);
+    }
+  };
+
+  const getVisitorTrends = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:8831/user/visitors/trends?flipbookId=" + flipbookName
+      );
+      const data = await res.json();
+      setVisitorTrends(data);
+      console.log(data);
+    } catch (err) {
+      console.error("Error fetching visitor trends:", err);
+    }
+  };
+
+  const getMostVisitedPages = async () => {
+    try {
+      const res = await fetch(
+        BASE_URL +
+          "/user/behavior/most-visited-pages?flipbookId=" +
+          flipbookName
+      );
+      const data = await res.json();
+      setPagesAnalytics(data);
+    } catch (err) {
+      console.error("Error fetching time spent on pages:", err);
+    }
+  };
+
+  const getMostClickedButtons = async () => {
+    try {
+      const res = await fetch(
+        BASE_URL + "/user/behavior/most-button-click?flipbookId=" + flipbookName
+      );
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setMostClickedButtons(data);
+      console.log(data);
+    } catch (err) {
+      console.error("Error fetching most clicked buttons:", err);
+    }
+  };
+
+  const fetchSourceInfo = async () => {
+    try {
+      const res = await fetch(
+        BASE_URL + "/user/sources/info?flipbookId=" + flipbookName
+      );
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setSources(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchGeographyInfo = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:8831/user/geography/info?flipbookId=" + flipbookName
+      );
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setGeographyInfo(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchAllData = async () => {
+      try {
+        await Promise.all([
+          getSessionData(),
+          getVisitorData(),
+          getEngagementData(),
+          getVisitorTrends(),
+          getMostVisitedPages(),
+          getMostClickedButtons(),
+          fetchSourceInfo(),
+          fetchGeographyInfo(),
+        ]);
+      } catch (err) {
+        console.error("Data fetch error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (flipbookName) {
+      fetchAllData();
+    }
+  }, [flipbookName]);
 
   if (isLoading) {
     return (
@@ -301,21 +470,21 @@ const FlipbookAnalyticsDashboard = () => {
               <h1 className="text-3xl font-bold text-gray-900">
                 Flipbook Analytics
               </h1>
-              <p className="text-gray-600">
+              {/* <p className="text-gray-600">
                 Product Catalog 2025 - Comprehensive Analytics Dashboard
-              </p>
+              </p> */}
             </div>
             <div className="flex items-center space-x-4">
               {/* Live indicator */}
-              <div className="flex items-center space-x-2">
+              {/* <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <span className="text-sm text-gray-600">
                   Live Data - Updates every {selectedPeriod}
                 </span>
-              </div>
+              </div> */}
 
               {/* Custom Date Range */}
-              <div className="flex items-center space-x-2">
+              {/* <div className="flex items-center space-x-2">
                 <input
                   type="date"
                   value={selectedDateRange.start}
@@ -347,10 +516,10 @@ const FlipbookAnalyticsDashboard = () => {
                 >
                   Apply
                 </button>
-              </div>
+              </div> */}
 
               {/* Period Buttons */}
-              <div className="flex space-x-2">
+              {/* <div className="flex space-x-2">
                 {["24h", "7d", "30d", "90d"].map((period) => (
                   <button
                     key={period}
@@ -364,7 +533,7 @@ const FlipbookAnalyticsDashboard = () => {
                     {period}
                   </button>
                 ))}
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -411,7 +580,7 @@ const FlipbookAnalyticsDashboard = () => {
                       Daily Visitors
                     </p>
                     <p className="text-3xl font-bold text-gray-900">
-                      {formatNumber(currentData.dailyVisitors)}
+                      {formatNumber(visitorsData?.daily?.today)}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -421,7 +590,7 @@ const FlipbookAnalyticsDashboard = () => {
                 <div className="mt-4 flex items-center">
                   <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
                   <span className="text-sm text-green-600">
-                    +12.5% from yesterday
+                    {visitorsData?.daily?.change} from yesterday
                   </span>
                 </div>
               </div>
@@ -433,7 +602,7 @@ const FlipbookAnalyticsDashboard = () => {
                       Weekly Visitors
                     </p>
                     <p className="text-3xl font-bold text-gray-900">
-                      {formatNumber(currentData.weeklyVisitors)}
+                      {formatNumber(visitorsData?.weekly?.thisWeek)}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -443,7 +612,7 @@ const FlipbookAnalyticsDashboard = () => {
                 <div className="mt-4 flex items-center">
                   <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
                   <span className="text-sm text-green-600">
-                    +8.3% from last week
+                    {visitorsData.weekly.change} from yesterday from last week
                   </span>
                 </div>
               </div>
@@ -455,7 +624,7 @@ const FlipbookAnalyticsDashboard = () => {
                       Monthly Visitors
                     </p>
                     <p className="text-3xl font-bold text-gray-900">
-                      {formatNumber(currentData.monthlyVisitors)}
+                      {formatNumber(visitorsData.monthly.thisMonth)}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -465,7 +634,7 @@ const FlipbookAnalyticsDashboard = () => {
                 <div className="mt-4 flex items-center">
                   <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
                   <span className="text-sm text-green-600">
-                    +15.7% from last month
+                    {visitorsData.monthly.change} from last month
                   </span>
                 </div>
               </div>
@@ -477,7 +646,7 @@ const FlipbookAnalyticsDashboard = () => {
                       Active Users
                     </p>
                     <p className="text-3xl font-bold text-gray-900">
-                      {dashboardData.summary.activeUsers}
+                      {engagementData?.activeUsers}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -500,7 +669,7 @@ const FlipbookAnalyticsDashboard = () => {
                     <Clock className="h-5 w-5 text-blue-600" />
                   </div>
                   <span className="text-2xl font-bold text-gray-900">
-                    {formatDuration(currentData.avgSessionDuration)}
+                    {sessionData.avgSessionDuration}
                   </span>
                 </div>
                 <p className="text-sm font-medium text-gray-600">
@@ -515,7 +684,7 @@ const FlipbookAnalyticsDashboard = () => {
                     <FileText className="h-5 w-5 text-green-600" />
                   </div>
                   <span className="text-2xl font-bold text-gray-900">
-                    {dashboardData.summary.avgPagesViewed}
+                    {sessionData.avgPagesPerSession}
                   </span>
                 </div>
                 <p className="text-sm font-medium text-gray-600">
@@ -532,7 +701,7 @@ const FlipbookAnalyticsDashboard = () => {
                     <Target className="h-5 w-5 text-purple-600" />
                   </div>
                   <span className="text-2xl font-bold text-gray-900">
-                    {currentData.completionRate}%
+                    {engagementData?.completionRate}
                   </span>
                 </div>
                 <p className="text-sm font-medium text-gray-600">
@@ -541,7 +710,47 @@ const FlipbookAnalyticsDashboard = () => {
                 <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-purple-600 h-2 rounded-full"
-                    style={{ width: `${currentData.completionRate}%` }}
+                    style={{ width: `${engagementData?.completionRate} ` }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Target className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900">
+                    {engagementData?.newUsers}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-gray-600">New user</p>
+                <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-purple-600 h-2 rounded-full"
+                    style={{ width: `${engagementData?.newUserPercentage} ` }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Target className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900">
+                    {engagementData?.returningUsers}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-gray-600">
+                  Returned user
+                </p>
+                <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-purple-600 h-2 rounded-full"
+                    style={{
+                      width: `${engagementData?.returnUserPercentage} `,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -626,12 +835,14 @@ const FlipbookAnalyticsDashboard = () => {
                 </div>
                 <div className="text-center">
                   <span className="text-4xl font-bold text-gray-900">
-                    {currentData.returnVisitorRate}%
+                    {engagementData?.returnUserPercentage}
                   </span>
                   <div className="mt-4 w-full bg-gray-200 rounded-full h-3">
                     <div
                       className="bg-green-500 h-3 rounded-full"
-                      style={{ width: `${currentData.returnVisitorRate}%` }}
+                      style={{
+                        width: `${engagementData?.returnUserPercentage}`,
+                      }}
                     ></div>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">Returning users</p>
@@ -646,33 +857,29 @@ const FlipbookAnalyticsDashboard = () => {
           <>
             {/* Visitor Trends */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              {/* <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6">
                   Daily Visitor Trends
                 </h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={getVisitorChartData()}>
+                  <LineChart data={visitorTrends?.dailyTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
+                    <XAxis dataKey="hour" stroke="#6b7280" fontSize={12} />
+
                     <YAxis stroke="#6b7280" fontSize={12} />
                     <Tooltip />
+
                     <Line
                       type="monotone"
-                      dataKey="visitors"
+                      dataKey="count"
                       stroke="#3B82F6"
                       strokeWidth={3}
                     />
-                    <Line
-                      type="monotone"
-                      dataKey="newVisitors"
-                      stroke="#10B981"
-                      strokeWidth={2}
-                    />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
+              </div> */}
 
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              {/* <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6">
                   Session Duration Trends
                 </h3>
@@ -696,7 +903,7 @@ const FlipbookAnalyticsDashboard = () => {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
+              </div> */}
             </div>
 
             {/* Weekly and Monthly Views */}
@@ -706,16 +913,12 @@ const FlipbookAnalyticsDashboard = () => {
                   Weekly Visitors
                 </h3>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={dashboardData.weeklyVisitors}>
+                  <BarChart data={visitorTrends?.weeklyTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="week" stroke="#6b7280" fontSize={12} />
                     <YAxis stroke="#6b7280" fontSize={12} />
                     <Tooltip />
-                    <Bar
-                      dataKey="visitors"
-                      fill="#3B82F6"
-                      radius={[4, 4, 0, 0]}
-                    />
+                    <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -725,16 +928,12 @@ const FlipbookAnalyticsDashboard = () => {
                   Monthly Visitors
                 </h3>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={dashboardData.monthlyVisitors}>
+                  <BarChart data={visitorTrends?.weeklyTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
                     <YAxis stroke="#6b7280" fontSize={12} />
                     <Tooltip />
-                    <Bar
-                      dataKey="visitors"
-                      fill="#10B981"
-                      radius={[4, 4, 0, 0]}
-                    />
+                    <Bar dataKey="count" fill="#10B981" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -751,19 +950,24 @@ const FlipbookAnalyticsDashboard = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-6">
                   Hourly Activity
                 </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={dashboardData.timeOfDayData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="hour" stroke="#6b7280" fontSize={12} />
-                    <YAxis stroke="#6b7280" fontSize={12} />
-                    <Tooltip />
-                    <Bar
-                      dataKey="sessions"
-                      fill="#3B82F6"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+
+                {Object.entries(visitorTrends?.dailyTrend).length === 0 ? (
+                  <p>No data</p>
+                ) : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={visitorTrends?.dailyTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="hour" stroke="#6b7280" fontSize={12} />
+                      <YAxis stroke="#6b7280" fontSize={12} />
+                      <Tooltip />
+                      <Bar
+                        dataKey="sessions"
+                        fill="#3B82F6"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
 
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -796,7 +1000,7 @@ const FlipbookAnalyticsDashboard = () => {
                 </div>
                 <div className="p-6">
                   <div className="space-y-4">
-                    {dashboardData.mostVisitedPages.map((page, index) => (
+                    {/* {dashboardData.mostVisitedPages.map((page, index) => (
                       <div
                         key={page.page}
                         className="flex items-center justify-between"
@@ -822,6 +1026,36 @@ const FlipbookAnalyticsDashboard = () => {
                           <p className="text-xs text-gray-500">views</p>
                         </div>
                       </div>
+                    ))} */}
+
+                    {Object.entries(pagesAnalytics).length === 0 && "no data "}
+
+                    {Object.entries(pagesAnalytics)?.map(([page, data]) => (
+                      <div
+                        key={page}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center">
+                          <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium mr-3">
+                            {page.at(-1)}
+                          </span>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              Page {page.at(-1)}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Avg time: {formatDuration(data.totalTime)} |
+                              Bounce: {/* {page.bounceRate}% */}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-gray-900">
+                            {formatNumber(data.views)}
+                          </p>
+                          <p className="text-xs text-gray-500">views</p>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -835,7 +1069,7 @@ const FlipbookAnalyticsDashboard = () => {
                 </div>
                 <div className="p-6">
                   <div className="space-y-4">
-                    {dashboardData.mostClickedButtons.map((button, index) => (
+                    {/* {dashboardData.mostClickedButtons.map((button, index) => (
                       <div
                         key={button.buttonId}
                         className="flex items-center justify-between"
@@ -859,7 +1093,39 @@ const FlipbookAnalyticsDashboard = () => {
                           <p className="text-xs text-gray-500">clicks</p>
                         </div>
                       </div>
-                    ))}
+                    ))} */}
+
+                    {Object.entries(mostClickedButtons).length === 0 &&
+                      "no data "}
+
+                    {Object.entries(mostClickedButtons)?.map(
+                      ([pageKey, buttons], index) =>
+                        buttons.map((btn, i) => (
+                          <div
+                            key={pageKey}
+                            className="flex items-center justify-between"
+                          >
+                            <div className="flex items-center">
+                              <MousePointer className="h-5 w-5 text-gray-400 mr-3" />
+                              <div>
+                                <p className="text-sm font-medium text-gray-900 capitalize">
+                                  Page {pageKey?.replace("Page", "")}{" "}
+                                </p>
+                                <p className="text-xs text-gray-500 capitalize">
+                                  {btn?.buttonText} | Conv:{"10% "}
+                                  {/* {button.conversionRate}% */}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-gray-900">
+                                {formatNumber(btn?.clicks)}
+                              </p>
+                              <p className="text-xs text-gray-500">clicks</p>
+                            </div>
+                          </div>
+                        ))
+                    )}
                   </div>
                 </div>
               </div>
@@ -875,23 +1141,38 @@ const FlipbookAnalyticsDashboard = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-6">
                   Traffic Sources
                 </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={dashboardData.sourceData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={120}
-                      dataKey="value"
-                      label={({ name, value }) => `${name}: ${value}%`}
-                    >
-                      {dashboardData.sourceData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                {Object.entries(sources?.trafficSources).length === 0 ? (
+                  "no data"
+                ) : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={Object.entries(sources?.trafficSources).map(
+                          ([key, value]) => ({
+                            name: key.charAt(0).toUpperCase() + key.slice(1),
+                            value: parseFloat(value.percentage),
+                            visitors: value?.count,
+                          })
+                        )}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={120}
+                        dataKey="value"
+                        label={({ name, value }) => `${name}: ${value}%`}
+                      >
+                        {Object.entries(sources?.trafficSources).map(
+                          (_, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={colorArray[index]}
+                            />
+                          )
+                        )}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
               </div>
 
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -899,7 +1180,7 @@ const FlipbookAnalyticsDashboard = () => {
                   Device Breakdown
                 </h3>
                 <div className="space-y-4">
-                  {dashboardData.deviceData.map((device, index) => (
+                  {/* {dashboardData.deviceData.map((device, index) => (
                     <div
                       key={device.device}
                       className="flex items-center justify-between"
@@ -926,7 +1207,42 @@ const FlipbookAnalyticsDashboard = () => {
                         </p>
                       </div>
                     </div>
-                  ))}
+                  ))} */}
+
+                  {Object.entries(sources?.devices).length === 0 && "no data"}
+
+                  {Object.entries(sources?.devices)?.map(
+                    ([device, info], index) => (
+                      <div
+                        key={device}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center">
+                          <div
+                            className="w-4 h-4 rounded bg-blue-500 mr-3"
+                            style={{
+                              backgroundColor: [
+                                "#3B82F6",
+                                "#10B981",
+                                "#F59E0B",
+                              ][index],
+                            }}
+                          ></div>
+                          <span className="text-sm font-medium text-gray-900 capitalize">
+                            {device}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-gray-900">
+                            {info?.percentage}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatNumber(info?.count)} users
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             </div>
@@ -940,28 +1256,30 @@ const FlipbookAnalyticsDashboard = () => {
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  {dashboardData.sourceData.map((source, index) => (
-                    <div
-                      key={source.name}
-                      className="bg-gray-50 rounded-lg p-4"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-gray-900">
-                          {source.name}
-                        </h4>
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: source.color }}
-                        ></div>
+                  {Object.entries(sources?.trafficSources).length === 0 &&
+                    "no data"}
+
+                  {Object.entries(sources?.trafficSources).map(
+                    ([name, data], index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-gray-900 capitalize">
+                            {name}
+                          </h4>
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: colorArray[index] }}
+                          ></div>
+                        </div>
+                        <p className="text-2xl font-bold text-gray-900 ">
+                          {formatNumber(data?.count)}
+                        </p>
+                        <p className="text-sm text-gray-500 ">
+                          {data?.percentage} of total traffic
+                        </p>
                       </div>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {formatNumber(source.visitors)}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {source.value}% of total traffic
-                      </p>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               </div>
             </div>
@@ -977,7 +1295,7 @@ const FlipbookAnalyticsDashboard = () => {
                 User Cities Word Cloud
               </h3>
               <div className="flex flex-wrap items-center justify-center gap-4 py-8">
-                {dashboardData.cityData.map((city, index) => (
+                {/* {dashboardData.cityData.map((city, index) => (
                   <span
                     key={city.city}
                     className="inline-block text-blue-600 font-semibold hover:text-blue-800 cursor-pointer transition-colors"
@@ -991,7 +1309,25 @@ const FlipbookAnalyticsDashboard = () => {
                   >
                     {city.city}
                   </span>
+                ))} */}
+
+                {geographyInfo?.cityWordCloud?.map((city, index) => (
+                  <span
+                    key={index}
+                    className="inline-block text-blue-600 font-semibold hover:text-blue-800 cursor-pointer transition-colors"
+                    style={{
+                      fontSize: `${Math.max(14, (city?.count / 100) * 24)}px`,
+                      opacity: Math.max(0.6, city?.count / 100),
+                    }}
+                    title={`${city?.city}: ${formatNumber(
+                      city?.count
+                    )} visitors`}
+                  >
+                    {city?.city}
+                  </span>
                 ))}
+
+                {geographyInfo?.cityWordCloud.length === 0 && "no data"}
               </div>
             </div>
 
@@ -1024,7 +1360,7 @@ const FlipbookAnalyticsDashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {dashboardData.cityData.slice(0, 10).map((city, index) => (
+                    {geographyInfo?.cityBreakdown?.map((city, index) => (
                       <tr key={city.city} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           #{index + 1}
@@ -1033,20 +1369,15 @@ const FlipbookAnalyticsDashboard = () => {
                           <div className="flex items-center">
                             <MapPin className="h-4 w-4 text-gray-400 mr-2" />
                             <span className="text-sm font-medium text-gray-900">
-                              {city.city}
+                              {city?.city}
                             </span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatNumber(city.visitors)}
+                          {formatNumber(city?.count)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {(
-                            (city.visitors /
-                              dashboardData.summary.totalVisitors) *
-                            100
-                          ).toFixed(1)}
-                          %
+                          {city?.percentage}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
                           <TrendingUp className="h-4 w-4 inline mr-1" />+
@@ -1056,6 +1387,9 @@ const FlipbookAnalyticsDashboard = () => {
                     ))}
                   </tbody>
                 </table>
+                {geographyInfo?.cityBreakdown.length === 0 && (
+                  <div className="text-center"> no data </div>
+                )}
               </div>
             </div>
           </>

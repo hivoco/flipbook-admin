@@ -55,6 +55,15 @@ const FlipbookCard = ({ flipbook, id, getAllBrocchures }) => {
             <p className="text-gray-600 text-sm mb-4">
               Created: {convertToReadableDate(flipbook?.createdAt)}
             </p>
+
+            <a
+            onClick={e=>e.stopPropagation()}
+              target="_blank"
+              className="text-blue-600 underline hover:text-blue-800 text-sm"
+              href={`${BASE_URL}/analytics/${flipbook?.name}`}
+            >
+              Check Analytics
+            </a>
           </div>
 
           <MoreVertical

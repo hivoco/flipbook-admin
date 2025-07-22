@@ -17,6 +17,8 @@ import {
   EllipsisVertical,
   Eye,
   Trash2,
+  BarChart2,
+  BarChart,
 } from "lucide-react";
 import Image from "next/image";
 import { BASE_URL, USER_FACING_URL } from "../../../../constant";
@@ -43,16 +45,14 @@ const EditFlipbook = () => {
 
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [permission, setPermission] = useState(false);
-  const [totalPages, setTotalPages] = useState(5);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [visibleTooltip, setVisibleTooltip] = useState(null);
   const [videoIsPlaying, setVideoIsPlaying] = useState(false);
   const [popUpVisible, setPopUpVisible] = useState(false);
 
   // Interactive points state
   const [points, setPoints] = useState({});
+  const [gotPoints, setGotPoints] = useState([]);
   const [isEditingPoint, setIsEditingPoint] = useState(null);
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -519,13 +519,16 @@ const EditFlipbook = () => {
       </div>
     </div>
   );
-  const [gotPoints, setGotPoints] = useState([]);
 
   const getPoints = async () => {
     try {
       const res = await fetch(`${BASE_URL}/link/media-links/${flipbookName}`);
       const data = await res.json();
       setGotPoints(data?.data?.sort((a, b) => a.pageNumber - b.pageNumber));
+      if (isEditingPoint) {
+        deletePoint(isEditingPoint); // Remove from local points state
+        setIsEditingPoint(null);
+      }
     } catch (err) {
       console.error("Fetch failed:", err);
     }
@@ -536,7 +539,9 @@ const EditFlipbook = () => {
     getPoints();
   }, [flipbookName]);
 
-  async function addPoint() {
+  async function addPoint(isVideoforMobile) {
+    console.log(isVideoforMobile, 541);
+
     if (!flipbookName || !currentCordinate.x) {
       throw Error("no flipbook name or page number available");
     }
@@ -562,6 +567,7 @@ const EditFlipbook = () => {
             x: currentCordinate.x,
             y: currentCordinate.y,
           },
+          isVideoforMobile: isVideoforMobile,
         }),
       });
 
@@ -570,7 +576,7 @@ const EditFlipbook = () => {
         deletePoint(isEditingPoint); // Remove from local points state
         setIsEditingPoint(null);
       }
-      // removes current saved point to backend 
+      // removes current saved point to backend
 
       // setPoints({}); remove all red points filled unfilled both
       await getPoints();
@@ -1108,6 +1114,16 @@ const EditFlipbook = () => {
             >
               <EllipsisVertical size={28} color="white" />
             </button>
+
+            <a
+              onClick={(e) => e.stopPropagation()}
+              target="_blank"
+              className="text-blue-600 underline hover:text-blue-800 text-sm"
+              href={`${BASE_URL}/analytics/${flipbookName}`}
+              title="Checkout Analytics"
+            >
+              <BarChart2 size={28} color="white" />
+            </a>
           </div>
         </div>
       </div>
@@ -1125,6 +1141,7 @@ const EditFlipbook = () => {
           flipbookName={flipbookName}
           clickedImageIndex={clickedImageIndex}
           currentCordinate={currentCordinate}
+          getPoints={getPoints}
         />
       )}
 

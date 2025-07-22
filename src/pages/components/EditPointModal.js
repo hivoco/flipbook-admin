@@ -1,6 +1,7 @@
 import { Link2, Loader2, Save, Upload, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { BASE_URL } from "../../../constant";
+import { Switch } from "@headlessui/react";
 
 const EditPointModal = ({
   point,
@@ -13,11 +14,13 @@ const EditPointModal = ({
   flipbookName,
   clickedImageIndex,
   currentCordinate,
+  getPoints,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [message, setMessage] = useState([]);
   const fileInputRef = useRef(null);
+  const [enabled, setEnabled] = useState(false);
 
   const saveChanges = () => {
     updatePoint(point.id, {
@@ -38,7 +41,6 @@ const EditPointModal = ({
 
   const handleImageUpload = async () => {
     if (selectedFiles.length === 0) {
-      // setMessage("Please select at least one image.");
       alert("Please select at least one image.");
       return;
     }
@@ -71,7 +73,10 @@ const EditPointModal = ({
       }
 
       const data = await response.json();
-      //   setMessage("Upload successful");
+      setIsEditingPoint(null);
+      setMessage("Upload successful");
+      await getPoints();
+
       //   setPopUpVisible(false);
       //   getAllBrocchures();
       //   setPopUpVisible(false);
@@ -143,11 +148,33 @@ const EditPointModal = ({
               />
             </div>
 
-            <div className="flex gap-2 mt-6">
+            <div
+              title="Select when video is in portrait (vertical) mode (9:16)"
+              className="flex items-center gap-1 mt-2"
+            >
+              <Switch
+                checked={enabled}
+                onChange={setEnabled}
+                className={`${
+                  enabled ? "bg-blue-600" : "bg-gray-300"
+                } relative inline-flex h-6 w-11 items-center rounded-full`}
+              >
+                <span
+                  className={`${
+                    enabled ? "translate-x-6" : "translate-x-1"
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                />
+              </Switch>
+              <span className="text-center text-sm text-gray-600">
+                Vertical Video
+              </span>
+            </div>
+
+            <div className="flex gap-2 mt-4">
               <button
                 onClick={() => {
                   saveChanges();
-                  addPoint();
+                  addPoint(enabled);
                 }}
                 className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
               >
@@ -203,6 +230,7 @@ const EditPointModal = ({
                 {/* {uploading && <Loader2 size={20} className="animate-spin" />} */}
               </button>
             </div>
+            <p className="text-center">{message}</p>
           </>
         )}
       </div>

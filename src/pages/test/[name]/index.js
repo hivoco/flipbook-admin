@@ -1,56 +1,50 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import HTMLFlipBook from "react-pageflip";
-import {
-  AudioWaveform,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardCheck,
-  Copy,
-  Fullscreen,
-  Link,
-  Volume2,
-  VolumeX,
-  X,
-  Play,
-  Pause,
-  Edit3,
-  FileVideo,
-  Trash2,
-  CopyCheck, // Added for delete icon
-} from "lucide-react";
 import Image from "next/image";
-// import { BASE_URL, USER_FACING_URL } from "../../../../constant";
-import { BASE_URL, USER_FACING_URL } from "../../../../constant.js"
-
+import HTMLFlipBook from "react-pageflip";
 import YouTube from "react-youtube";
+import { X, Play, Pause, Edit3, Trash2 } from "lucide-react";
+
+import useCheckAuthOnRoute from "@/hooks/useCheckAuthOnRoute";
+import { useResizeRerender } from "@/hooks/useResizeRerender";
+
+import { BASE_URL, USER_FACING_URL } from "../../../../constant";
+import MenuPopup from "@/pages/components/MenuPopup";
+import EditPointModal from "@/pages/components/EditPointModal";
+import GenerateLinkPopup from "@/pages/components/GenerateLinkPopup";
+import BottomMenuBar from "@/pages/components/BottomMenuBar";
+import Loading from "@/pages/components/Loading";
 
 const EditFlipbook = () => {
-  const bookRef = useRef(null);
+  const isUserLoggedIn = useCheckAuthOnRoute();
 
+  const bookRef = useRef();
   const audioRef = useRef();
   const divRef = useRef();
   const videoRef = useRef();
   const mediaRef = useRef(null);
-  const nodeRef = useRef(null);
   const [audioSrc, setAudioSrc] = useState("");
   const [text, setText] = useState("");
   const [gender, setGender] = useState("");
   const [currentCordinate, setCurrentCordinate] = useState();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [displayOverlay, setDisplayOverlay] = useState(false);
+
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
 
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [permission, setPermission] = useState(false);
-  const [totalPages, setTotalPages] = useState(5);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [visibleTooltip, setVisibleTooltip] = useState(null);
   const [videoIsPlaying, setVideoIsPlaying] = useState(false);
   const [popUpVisible, setPopUpVisible] = useState(false);
+  const [isPdfLandScape, setIsPdfLandScape] = useState(true);
 
   // Interactive points state
   const [points, setPoints] = useState({});
+  const [gotPoints, setGotPoints] = useState([]);
   const [isEditingPoint, setIsEditingPoint] = useState(null);
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -66,28 +60,26 @@ const EditFlipbook = () => {
 
   const labelInputRef = useRef(null);
 
-  const [windowHeight, setWindowHeight] = useState(null);
-  const [windowWidth, setWindowWidth] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [mediaUrl, setMediaUrl] = useState();
 
-  //888888888888888888888
   const [showVideoPopup, setShowVideoPopup] = useState(false);
   const [currentVideoSrc, setCurrentVideoSrc] = useState("");
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [isYouTubeVideo, setIsYouTubeVideo] = useState(false);
   const [youtubePlayer, setYoutubePlayer] = useState(null);
 
-  useEffect(() => {
-    setWindowHeight(window.innerHeight);
-    setWindowWidth(window.innerWidth);
-  }, []);
+  const [isLandscape, setIsLandscape] = useState(false);
+  const [isPageFlipSoundOn, setIsPageFlipSoundOn] = useState(false);
 
-  const options = ["Male", "Female"];
+  useEffect(() => {
+    setHeight(window.innerHeight);
+    setWidth(window.innerWidth);
+  }, []);
 
   useEffect(() => {
     const name = window.location.pathname.split("/").pop();
-
     setFlipbookName(name);
   }, []);
 
@@ -97,7 +89,11 @@ const EditFlipbook = () => {
         `${BASE_URL}/brochure/brochure/${flipbookName}`
       );
       const data = await response.json();
+      console.log(data, "getFlipbookImages");
+
       setFlipbookImages(data?.data?.images);
+      setIsLandscape(data?.data?.isLandScape);
+      setIsPageFlipSoundOn(data?.data?.pageFlipSound);
     } catch (error) {
       console.error("Error fetching flipbook data:", error);
     }
@@ -117,6 +113,7 @@ const EditFlipbook = () => {
 
   const onFlip = useCallback(
     (e) => {
+      setCurrentPage(e.data);
       setSelectedPoint(null);
       setActiveGotPoint(null); // Close any active gotPoint actions
     },
@@ -211,15 +208,16 @@ const EditFlipbook = () => {
     }
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (string) => {
     try {
-      await navigator.clipboard.writeText(audioSrc);
+      await navigator.clipboard.writeText(string);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
     }
   };
+
   const handleCopyURL = async () => {
     try {
       await navigator.clipboard.writeText(`${USER_FACING_URL}/${flipbookName}`);
@@ -232,15 +230,14 @@ const EditFlipbook = () => {
 
   // Interactive Points Functions
   const handleImageClick = (e, pageIndex) => {
+    console.log("handleImageClick");
+
     setClickedImageIndex(pageIndex + 1);
 
     const rect = e.target.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setCurrentCordinate({
-      x: x,
-      y: y,
-    });
+    setCurrentCordinate({ x: x, y: y }); // sending this to backend
 
     const newPoint = {
       id: Date.now(),
@@ -475,84 +472,6 @@ const EditFlipbook = () => {
     );
   };
 
-  const EditPointModal = ({ point }) => {
-    const mediaUrlRef = useRef(null);
-
-    useEffect(() => {
-      mediaUrlRef.current?.focus();
-    }, []);
-
-    const saveChanges = () => {
-      updatePoint(point.id, {
-        mediaUrl: mediaUrl,
-      });
-
-      setIsEditingPoint(null);
-    };
-
-    return (
-      <div
-        className="fixed inset-0 bg-gray-800/35 flex items-center justify-center z-[60]"
-        onClick={() => setIsEditingPoint(null)}
-      >
-        <div
-          className="bg-white p-6 rounded-lg max-w-[250px] w-full  max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Edit Point</h3>
-
-            <button
-              onClick={() => setIsEditingPoint(null)}
-              className="text-gray-500 self-start hover:text-gray-700"
-            >
-              <X size={24} />
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                <FileVideo size={16} className="inline mr-1" />
-                Media
-              </label>
-              <div className="space-y-2">
-                <input
-                  ref={mediaUrlRef}
-                  type="url"
-                  value={mediaUrl}
-                  onChange={(e) => {
-                    setMediaUrl(e.target.value);
-                  }}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter URL..."
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-2 mt-6">
-            <button
-              onClick={() => {
-                saveChanges();
-                addPoint();
-              }}
-              className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-            >
-              Save Changes
-            </button>
-            <button
-              onClick={() => deletePoint(point.id)}
-              className="px-4 bg-red-500 text-white py-2 rounded hover:bg-red-600"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const PointPopover = ({ point }) => (
     <div
       className="absolute bg-white border border-gray-300 rounded-lg shadow-lg p-3 min-w-48 z-50"
@@ -591,13 +510,15 @@ const EditFlipbook = () => {
     </div>
   );
 
-  const [gotPoints, setGotPoints] = useState([]);
-
   const getPoints = async () => {
     try {
       const res = await fetch(`${BASE_URL}/link/media-links/${flipbookName}`);
       const data = await res.json();
       setGotPoints(data?.data?.sort((a, b) => a.pageNumber - b.pageNumber));
+      if (isEditingPoint) {
+        deletePoint(isEditingPoint); // Remove from local points state
+        setIsEditingPoint(null);
+      }
     } catch (err) {
       console.error("Fetch failed:", err);
     }
@@ -619,6 +540,7 @@ const EditFlipbook = () => {
 
     setSelectedPoint(null);
     setActiveGotPoint(null);
+
     try {
       const res = await fetch(`${BASE_URL}/link/media-link`, {
         method: "POST",
@@ -637,8 +559,14 @@ const EditFlipbook = () => {
       });
 
       const data = await res.json();
+      if (isEditingPoint) {
+        deletePoint(isEditingPoint); // Remove from local points state
+        setIsEditingPoint(null);
+      }
+      // removes current saved point to backend
 
-      getPoints();
+      // setPoints({}); remove all red points filled unfilled both
+      await getPoints();
       console.log(data, "added point");
     } catch (err) {
       console.error("Error:", err);
@@ -803,336 +731,335 @@ const EditFlipbook = () => {
     }
   };
 
+  async function updateValues(endpoint) {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/brochure/brochure/${flipbookName}/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            [endpoint]:
+              endpoint.toLowerCase() === "isLandScape".toLowerCase()
+                ? !isLandscape
+                : !isPageFlipSoundOn,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      getFlipbookImages();
+      return data;
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+  }
+
+  function displayPageNumInBar(pageNum) {
+    const total = flipbookImages.length;
+    if (isPdfLandScape || window.innerWidth < 640)
+      return `${pageNum + 1} / ${total}`;
+
+    if (pageNum === 0 || pageNum + 1 === total) {
+      return `${pageNum + 1}/${total}`;
+    }
+
+    return `${pageNum + 1}-${pageNum + 2}/${total}`;
+  }
+
+  const reRender = useResizeRerender();
+  if (!isUserLoggedIn) {
+    return null;
+  }
+
   return (
     <div className="h-svh  w-full flex flex-col overflow-hidden">
       <div className="relative w-full flex-1 max-w-6xl mx-auto">
-        <div
-          ref={divRef}
-          className="relative h-full bg-[#E94B7A] flex flex-col"
-        >
-          <div className="flex-1 flex items-center justify-center  ">
-            <div
-              style={{
-                transform: `scale(${zoomLevel})`,
-                transformOrigin: "center",
-              }}
-              className="transition-transform duration-300 ease-out w-full h-full flex items-center justify-center"
-            >
-              <HTMLFlipBook
-                // width={windowWidth < 640 ? windowWidth - 32 : 400}
-                // height={windowWidth < 640 ? (windowWidth - 32) * 1.4 : 560}
-                // size="stretch"
-                // minWidth={windowWidth < 640 ? windowWidth : 300}
-                // minHeight={windowWidth < 640 ? windowWidth * 1.4 : 420}
-                // maxWidth={
-                //   windowWidth < 640
-                //     ? windowWidth - 16
-                //     : (windowHeight - 70) / 1.4
-                // }
-                // maxHeight={
-                //   windowWidth < 640 ? windowHeight - 200 : windowHeight - 70
-                // }
-                // mobileScrollSupport={true}
-                // onFlip={onFlip}
-                // flippingTime={500}
-                // ref={bookRef}
-                // startPage={0}
-                // autoSize={true}
-                // usePortrait={true}
-                // useMouseEvents={false}
-                // className="w-full h-auto max-w-full max-h-full"
+        <div ref={divRef} className="relative h-full  flex  flex-col ">
+          <div className="flex-1 flex items-center justify-center `">
+            <div className="relative transition-transform duration-300 ease-out w-full h-full flex items-center  overflow-hidden">
+              {flipbookImages.length > 0 && gotPoints.length >= 0 ? (
+                <HTMLFlipBook
+                  key={reRender}
+                  size="stretch"
+                  height={
+                    width < 640
+                      ? (width - 32) * 1.4
+                      : isPdfLandScape
+                      ? height
+                      : 560
+                  }
+                  minHeight={
+                    width < 640 ? width * 1.4 : isPdfLandScape ? height : 420
+                  }
+                  maxHeight={
+                    width < 640
+                      ? height - 200
+                      : isPdfLandScape
+                      ? height
+                      : height - 70
+                  }
+                  width={
+                    width < 640
+                      ? width - 32
+                      : isPdfLandScape
+                      ? width * 0.9 * 0.5
+                      : 400
+                  }
+                  minWidth={
+                    width < 640
+                      ? width
+                      : isPdfLandScape
+                      ? width * 0.8 * 0.5
+                      : 300
+                  }
+                  maxWidth={
+                    width < 640
+                      ? width - 16
+                      : isPdfLandScape
+                      ? width * 0.5
+                      : (height - 70) / 1.4
+                  }
+                  mobileScrollSupport={true}
+                  onFlip={onFlip}
+                  flippingTime={500}
+                  ref={bookRef}
+                  usePortrait={false}
+                  startPage={0}
+                  autoSize={true}
+                  swipeDistance={50}
+                  useMouseEvents={!(window.innerWidth > 1000)}
+                  // useMouseEvents={true}
+                  drawShadow={true}
+                  maxShadowOpacity={0.5}
+                  // showCover={window.innerWidth > 1000 && !isPdfLandScape}
+                  showCover={true}
+                  // show cover not looking good in single image /landscape view
+                  style={{
+                    // stacked page animation as well as shadow
+                    boxShadow: isPdfLandScape
+                      ? ""
+                      : currentPage === 0
+                      ? ""
+                      : `15px 0px 0px 0px #7A7A7A66,10px 0px 0px 0px #7A7A7A80, 5px 0px 0px 0px #7A7A7A99,2px 0px 0px 0px #7A7A7AB2,
+                     0px 2px 2px 0px #00000033,-2px 0px 2px 0px #00000033, 0px -2px 2px 0px #0000001A`,
+                    // with last one : "30px 0px 0px 0px #7A7A7A1A,25px 0px 0px 0px #7A7A7A33,20px 0px 0px 0px #7A7A7A4D,15px 0px 0px 0px #7A7A7A66,10px 0px 0px 0px #7A7A7A80, 5px 0px 0px 0px #7A7A7A99,2px 0px 0px 0px #7A7A7AB2,-4px 0px 4px 0px #0000004D",
+                    // "0px 2px 2px 0px #00000033,-2px 0px 2px 0px #00000033,0px -2px 2px 0px #0000001A",  outline shadow potrait
+                  }}
+                  renderOnlyPageLengthChange={false}
+                  // style={{ boxShadow: "-20px 0 30px rgba(0, 0, 0, 0.3)" }}
+                  className={`
+                  rounded-sm  flibook-container relative select-none 
 
-                ref={bookRef}
-                width={1000}
-                height={450}
-                size="stretch"
-                minWidth={600}
-                maxWidth={1000}
-                minHeight={400}
-                maxHeight={600}
+                  ${
+                    isPdfLandScape
+                      ? "!h-[95svh] min-h-[90svh] !max-h-[99svh]"
+                      : // : "w-full h-auto max-w-full max-h-full"
+                        // "!h-[95svh] min-h-[90svh] !max-h-svh"
+                        `!max-h-full !h-auto 
+                        }`
+                  }
+                  ${
+                    !isPdfLandScape &&
+                    window.innerWidth > 640 &&
+                    currentPage !== 0
+                      ? "gradient-bg"
+                      : ""
+                  }
 
-                maxShadowOpacity={0.5}
-                showCover={true}
-                mobileScrollSupport={false}
-                onFlip={onFlip}
-                className="shadow-lg"
-              >
-                {flipbookImages?.map((imageSrc, index) => (
-                  <div
-                    key={index}
-                    className="relative bg-white overflow-hidden  w-full h-full self-center flex justify-center"
-                  >
-                    <Image
-                      src={imageSrc}
-                      alt={"image " + index}
-                      width={600}
-                      height={600}
-                      className=" object-contain h-full w-full sm:h-[90vh] sm:w-auto cursor-crosshair"
-                      onClick={(e) => handleImageClick(e, index)}
-                      priority={true}
-                    />
+                  ${
+                    isPdfLandScape && !isFullscreen && window.innerWidth > 1000
+                      ? "gradient-bg"
+                      : ""
+                  }
+                  `}
+                >
+                  {flipbookImages?.map((imageSrc, index) => (
+                    <div
+                      key={index}
+                      className={`relative bg-white overflow-hidden h-full w-full self-center  justify-center  items-center  
+                      ${
+                        index === 0 && !isPdfLandScape
+                          ? " lg:right-1/2 lg:-translate-x-1/2"
+                          : ""
+                      }
+                      ${isPdfLandScape ? "w-auto  " : "w-full"}
+                      `}
+                    >
+                      {displayOverlay && (
+                        <div className="absolute  z-40 pointer-events-none w-screen h-screen top-0 left-0 bg-black/70 " />
+                      )}
 
-                    {/* Render gotPoints with action buttons */}
-                    {gotPoints
-                      .filter((obj) => obj.pageNumber === index + 1)
-                      .map((obj, idx) => {
-                        return (
-                          <div className="" key={idx}>
-                            <div
-                              className={`absolute inset-0 w-4 h-4 rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/2 border-2 border-white shadow-lg hover:scale-110 transition-transform ${
-                                playingMediaId === obj._id
-                                  ? "bg-green-400"
-                                  : "!bg-blue-400"
-                              }`}
-                              style={{
-                                left: `${obj.coordinates.x}%`,
-                                top: `${obj.coordinates.y}%`,
-                                zIndex: 10,
-                              }}
-                              onClick={(e) => handleGotPointClick(e, obj)}
-                            />
+                      <Image
+                        width={500}
+                        height={500}
+                        priority={true}
+                        onClick={(e) => handleImageClick(e, index)}
+                        // shadow for landscape pdf
+                        style={{
+                          boxShadow: isPdfLandScape
+                            ? //stack right
+                              `
+                            15px 0px 0px 0px #7A7A7A66,10px 0px 0px 0px #7A7A7A80, 5px 0px 0px 0px #7A7A7A99,2px 0px 0px 0px #7A7A7AB2,
+                            0px 2px 2px 0px #00000033,-2px 0px 2px 0px #00000033, 0px -2px 2px 0px #0000001A,
 
-                            {/* Action buttons overlay */}
-                            {activeGotPoint === obj._id && (
+                            0 25px 40px rgba(0, 0, 0, 0.4),
+                            0 35px 60px rgba(0, 0, 0, 0.2),
+                            0 8px 15px rgba(0, 0, 0, 0.3),
+                            0 0 0 1px rgba(255, 255, 255, 0.1)`
+                            : //shadow around the image
+                              // old "30px 0px 0px 0px #7A7A7A1A,25px 0px 0px 0px #7A7A7A33,20px 0px 0px 0px #7A7A7A4D,15px 0px 0px 0px #7A7A7A66,10px 0px 0px 0px #7A7A7A80, 5px 0px 0px 0px #7A7A7A99,2px 0px 0px 0px #7A7A7AB2,-4px 0px 4px 0px #0000004D"
+                              ``,
+                        }}
+                        src={imageSrc}
+                        alt={"image " + index}
+                        // className={`
+                        //   ${
+                        //
+                        //       ? "mx-auto !w-auto !h-full object-contain"
+                        //       : "object-contain h-full w-full sm:h-[95vh] sm:w-auto"
+                        //   }
+                        //   `}
+
+                        className={`object-contain h-full relative cursor-crosshair 
+                        ${
+                          isPdfLandScape
+                            ? "w-full mxauto justify-self-center"
+                            : "w-auto  lg:h-[90vh] lg:w-auto"
+                        }
+                        `}
+                      />
+
+                      {/* Render gotPoints with action buttons */}
+                      {gotPoints
+                        .filter((obj) => obj.pageNumber === index + 1)
+                        .map((obj, idx) => {
+                          return (
+                            <div className="" key={idx}>
                               <div
-                                className="absolute flex gap-1 transform -translate-x-1/2 -translate-y-full"
+                                className={`absolute inset-0 w-4 h-4 rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/2 border-2 border-white shadow-lg hover:scale-110 transition-transform ${
+                                  playingMediaId === obj._id
+                                    ? "bg-green-400"
+                                    : "!bg-blue-400"
+                                }`}
                                 style={{
                                   left: `${obj.coordinates.x}%`,
                                   top: `${obj.coordinates.y}%`,
-                                  zIndex: 20,
-                                  marginTop: "-8px",
+                                  zIndex: 10,
                                 }}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {/* Play/Pause button */}
-                                <button
-                                  // onClick={() => handlePlayMedia(obj)}
-                                  onClick={(e) =>
-                                    handleMediaClick(obj?.link, e)
-                                  }
-                                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform ${
-                                    playingMediaId === obj._id
-                                      ? "bg-red-500"
-                                      : "bg-green-500"
-                                  }`}
-                                  title={
-                                    playingMediaId === obj._id
-                                      ? "Stop Media"
-                                      : "Play Media"
-                                  }
+                                onClick={(e) => handleGotPointClick(e, obj)}
+                              />
+
+                              {/* Action buttons overlay */}
+                              {activeGotPoint === obj._id && (
+                                <div
+                                  className="absolute flex gap-1 transform -translate-x-1/2 -translate-y-full"
+                                  style={{
+                                    left: `${obj.coordinates.x}%`,
+                                    top: `${obj.coordinates.y}%`,
+                                    zIndex: 20,
+                                    marginTop: "-8px",
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  {playingMediaId === obj._id ? (
-                                    <Pause size={14} />
-                                  ) : (
-                                    <Play size={14} />
-                                  )}
-                                </button>
+                                  {/* Play/Pause button */}
+                                  <button
+                                    // onClick={() => handlePlayMedia(obj)}
+                                    onClick={(e) =>
+                                      handleMediaClick(obj?.link, e)
+                                    }
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform ${
+                                      playingMediaId === obj._id
+                                        ? "bg-red-500"
+                                        : "bg-green-500"
+                                    }`}
+                                    title={
+                                      playingMediaId === obj._id
+                                        ? "Stop Media"
+                                        : "Play Media"
+                                    }
+                                  >
+                                    {playingMediaId === obj._id ? (
+                                      <Pause size={14} />
+                                    ) : (
+                                      <Play size={14} />
+                                    )}
+                                  </button>
 
-                                {/* Delete button */}
-                                <button
-                                  onClick={() => handleDeleteGotPoint(obj)}
-                                  className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform hover:bg-red-600"
-                                  title="Delete Point"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-
-                    {/* Render regular points */}
-                    {points[index] &&
-                      points[index].map((point) => (
-                        <div key={point.id}>
-                          <div
-                            className={`absolute w-4 h-4 rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/2 border-2 border-white shadow-lg hover:scale-110 transition-transform ${
-                              isPointFilled(point)
-                                ? "bg-green-500"
-                                : "bg-red-500"
-                            }`}
-                            style={{
-                              left: `${point.x}%`,
-                              top: `${point.y}%`,
-                              zIndex: 10,
-                            }}
-                            onClick={(e) => handlePointClick(e, point)}
-                          />
-
-                          {selectedPoint === point.id && (
-                            <PointPopover point={point} />
-                          )}
-                        </div>
-                      ))}
-                  </div>
-                ))}
-              </HTMLFlipBook>
-            </div>
-          </div>
-
-          <div className="bg-gray-800 flex items-center justify-between sm:justify-center px-2 sm:px-4 py-2 gap-1 sm:gap-8 flex-shrink-0">
-            <button
-              onClick={() => {
-                audioRef.current.pause();
-                bookRef?.current?.pageFlip()?.flipPrev();
-                setCurrentPage(currentPage > 0 ? currentPage - 2 : currentPage);
-              }}
-              className="text-white p-1 md:p-3 hover:bg-gray-700"
-              aria-label="Previous page"
-            >
-              <ChevronLeft size={28} />
-            </button>
-
-            <div className="hidden md:flex justify-center items-center gap-2 ">
-              <div className="text-white min-w-24">
-                Page {currentPage + 1}-{currentPage + 2} /{" "}
-                {flipbookImages?.length}
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                audioRef.current.pause();
-                bookRef?.current?.pageFlip()?.flipNext();
-                setCurrentPage(
-                  currentPage + 2 < flipbookImages?.length
-                    ? currentPage + 2
-                    : currentPage
-                );
-              }}
-              className="text-white p-1 md:p-3 hover:bg-gray-700"
-              aria-label="Next page"
-            >
-              <ChevronRight size={28} />
-            </button>
-
-            <button
-              onClick={toggleFullscreen}
-              className="text-white p-1 md:p-3 hover:bg-gray-700"
-              aria-label="Full screen"
-            >
-              <Fullscreen size={28} />
-            </button>
-
-            <button
-              className="p-1 md:p-3"
-              aria-label={isPlaying ? "Mute Audio" : "Play Audio"}
-              onClick={toggleAudio}
-            >
-              {isPlaying ? (
-                <Volume2 color="white" size={28} />
-              ) : (
-                <VolumeX color="white" size={28} />
-              )}
-            </button>
-
-            <button
-              onClick={() => setPopUpVisible((prev) => !prev)}
-              className="text-white p-1 md:p-3 hover:bg-gray-700 re"
-            >
-              <Link size={28} color="white" />
-            </button>
-
-            {popUpVisible && (
-              <div className="absolute bottom-15 right-0 min-w-[320px] max-w-lg bg-white rounded-xl shadow-xl p-4">
-                <div className="flex justify-end mb-4">
-                  <button
-                    onClick={() => setPopUpVisible(false)}
-                    className="text-white p-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <textarea
-                    id="controlled-textarea"
-                    value={text}
-                    onChange={handleChange}
-                    placeholder="Type Audio Text..."
-                    rows={4}
-                    required
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Audio Gender
-                    </label>
-                    <div className="flex gap-2">
-                      {options.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          className={`px-3 py-1.5 text-sm rounded-full border-2 transition-colors ${
-                            gender === option
-                              ? "bg-blue-500 text-white border-blue-500"
-                              : "bg-white text-gray-700 border-gray-300"
-                          }`}
-                          onClick={() => setGender(option)}
-                        >
-                          {option}
-                        </button>
-                      ))}
+                                  {/* Delete button */}
+                                  <button
+                                    onClick={() => handleDeleteGotPoint(obj)}
+                                    className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform hover:bg-red-600"
+                                    title="Delete Point"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                     </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleConvertToAudio}
-                      className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
-                    >
-                      <AudioWaveform size={18} /> Convert to Audio
-                    </button>
-                    <button
-                      onClick={() => setPopUpVisible(false)}
-                      className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-
-                {audioSrc && (
-                  <div
-                    onClick={handleCopy}
-                    className="flex items-center gap-2 mt-4 cursor-pointer"
-                  >
-                    <p className="text-gray-800 text-sm px-3 py-2 bg-white rounded-lg border flex-1 overflow-hidden">
-                      {audioSrc}
-                    </p>
-                    <span className="text-gray-600">
-                      {copied ? (
-                        <ClipboardCheck size={20} />
-                      ) : (
-                        <Copy size={20} />
-                      )}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <button
-              onClick={() => handleCopyURL()}
-              className="text-white p-1 md:p-3 hover:bg-gray-700 re"
-            >
-              <span className="text-gray-600">
-                {copied ? (
-                  <ClipboardCheck color="white" size={28} />
-                ) : (
-                  <Copy color="white" size={28} />
-                )}
-              </span>
-            </button>
+                  ))}
+                </HTMLFlipBook>
+              ) : (
+                <Loading />
+              )}
+            </div>
           </div>
+
+          <BottomMenuBar
+            isFullscreen={isFullscreen}
+            displayPageNumInBar={displayPageNumInBar}
+            currentPage={currentPage}
+            isPlaying={isPlaying}
+            toggleAudio={toggleAudio}
+            flipbookName={flipbookName}
+            audioRef={audioRef}
+            bookRef={bookRef}
+            toggleFullscreen={toggleFullscreen}
+            setPopUpVisible={setPopUpVisible}
+            setMenuOpen={setMenuOpen}
+          />
         </div>
       </div>
 
+      {popUpVisible && (
+        <GenerateLinkPopup
+          setPopUpVisible={setPopUpVisible}
+          text={text}
+          setText={setText}
+          setGender={setGender}
+          handleConvertToAudio={handleConvertToAudio}
+          gender={gender}
+          audioSrc={audioSrc}
+          handleCopy={handleCopy}
+          copied={copied}
+          flipbookName={flipbookName}
+        />
+      )}
+
       {/* Edit Modal */}
       {isEditingPoint && (
-        <EditPointModal point={findPointById(isEditingPoint)} />
+        <EditPointModal
+          point={findPointById(isEditingPoint)}
+          mediaUrl={mediaUrl}
+          setMediaUrl={setMediaUrl}
+          updatePoint={updatePoint}
+          addPoint={addPoint}
+          setIsEditingPoint={setIsEditingPoint}
+          deletePoint={deletePoint}
+          flipbookName={flipbookName}
+          clickedImageIndex={clickedImageIndex}
+          currentCordinate={currentCordinate}
+          getPoints={getPoints}
+        />
       )}
 
       <audio ref={audioRef} src={audioSrc ? audioSrc : null}></audio>
@@ -1197,6 +1124,16 @@ const EditFlipbook = () => {
             )}
           </div>
         </>
+      )}
+
+      {menuOpen && (
+        <MenuPopup
+          menuOpen={menuOpen}
+          setMenuOpen={setMenuOpen}
+          updateValues={updateValues}
+          isLandscape={isLandscape}
+          isPageFlipSoundOn={isPageFlipSoundOn}
+        />
       )}
     </div>
   );
