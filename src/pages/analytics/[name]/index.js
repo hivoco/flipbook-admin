@@ -339,7 +339,7 @@ const FlipbookAnalyticsDashboard = () => {
   const getVisitorData = async () => {
     try {
       const res = await fetch(
-        "http://localhost:8831/user/visitors?flipbookId=" + flipbookName
+        BASE_URL+"/user/visitors?flipbookId=" + flipbookName
       );
       const data = await res.json();
       setVisitorsData(data);
@@ -351,7 +351,7 @@ const FlipbookAnalyticsDashboard = () => {
   const getEngagementData = async () => {
     try {
       const res = await fetch(
-        "http://localhost:8831/user/engagement?flipbookId=" + flipbookName
+        BASE_URL+"/user/engagement?flipbookId=" + flipbookName
       );
       const data = await res.json();
       setEngagementData(data);
@@ -363,7 +363,7 @@ const FlipbookAnalyticsDashboard = () => {
   const getVisitorTrends = async () => {
     try {
       const res = await fetch(
-        "http://localhost:8831/user/visitors/trends?flipbookId=" + flipbookName
+        BASE_URL+"/user/visitors/trends?flipbookId=" + flipbookName
       );
       const data = await res.json();
       setVisitorTrends(data);
@@ -417,7 +417,7 @@ const FlipbookAnalyticsDashboard = () => {
   const fetchGeographyInfo = async () => {
     try {
       const res = await fetch(
-        "http://localhost:8831/user/geography/info?flipbookId=" + flipbookName
+        BASE_URL+"/user/geography/info?flipbookId=" + flipbookName
       );
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();

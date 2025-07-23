@@ -21,7 +21,7 @@ import {
   BarChart,
 } from "lucide-react";
 import Image from "next/image";
-import { BASE_URL, USER_FACING_URL } from "../../../../constant";
+import { ADMIN_URL, BASE_URL, USER_FACING_URL } from "../../../../constant";
 import YouTube from "react-youtube";
 import { handleShare } from "@/utilities/editFlipbook.helper.js";
 import useCheckAuthOnRoute from "@/hooks/useCheckAuthOnRoute";
@@ -1119,7 +1119,7 @@ const EditFlipbook = () => {
               onClick={(e) => e.stopPropagation()}
               target="_blank"
               className="text-blue-600 underline hover:text-blue-800 text-sm"
-              href={`${BASE_URL}/analytics/${flipbookName}`}
+              href={`${ADMIN_URL}/analytics/${flipbookName}`}
               title="Checkout Analytics"
             >
               <BarChart2 size={28} color="white" />

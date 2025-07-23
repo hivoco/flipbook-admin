@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 // import Modal from "./Modal";
 
-import { BASE_URL } from "../../../constant";
+import { ADMIN_URL, BASE_URL, USER_FACING_URL } from "../../../constant";
 import dynamic from "next/dynamic";
 const Modal = dynamic(() => import("./Modal"), { ssr: false });
 
@@ -60,7 +60,7 @@ const FlipbookCard = ({ flipbook, id, getAllBrocchures }) => {
             onClick={e=>e.stopPropagation()}
               target="_blank"
               className="text-blue-600 underline hover:text-blue-800 text-sm"
-              href={`${BASE_URL}/analytics/${flipbook?.name}`}
+              href={`${ADMIN_URL}/analytics/${flipbook?.name}`}
             >
               Check Analytics
             </a>
