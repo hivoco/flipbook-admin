@@ -9,6 +9,7 @@ export default function MenuPopup({
   updateValues,
   isLandscape,
   isPageFlipSoundOn,
+  recordingPermisson,
 }) {
   const togglePopup = () => setMenuOpen(!menuOpen);
   return (
@@ -35,7 +36,9 @@ export default function MenuPopup({
                 <div className="flex gap-3 items-center">
                   <SwitchButton
                     enabled={isLandscape}
-                    setEnabled={() => updateValues("isLandScape")}
+                    setEnabled={() => {
+                      updateValues({ isLandscape: !isLandscape });
+                    }}
                   />
                   <label
                     title={
@@ -85,7 +88,7 @@ export default function MenuPopup({
                 <SwitchButton
                   enabled={isPageFlipSoundOn}
                   setEnabled={() => {
-                    updateValues("pageFlipSound");
+                    updateValues({ pageFlipSound: !isPageFlipSoundOn });
                   }}
                 />
 
@@ -94,6 +97,22 @@ export default function MenuPopup({
                   className="block text-sm font-medium text-gray-700"
                 >
                   Page Sound
+                </label>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <SwitchButton
+                  enabled={recordingPermisson}
+                  setEnabled={() => {
+                    updateValues({ isRecordingEnable: !recordingPermisson });
+                  }}
+                />
+
+                <label
+                  title="Turns on the page flip sound"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Turn On Audio Recording
                 </label>
               </div>
             </div>

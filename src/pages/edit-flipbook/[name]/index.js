@@ -50,6 +50,8 @@ const EditFlipbook = () => {
   const [videoIsPlaying, setVideoIsPlaying] = useState(false);
   const [popUpVisible, setPopUpVisible] = useState(false);
 
+  const [recordingPermisson, setRecordingPermisson] = useState(false);
+
   // Interactive points state
   const [points, setPoints] = useState({});
   const [gotPoints, setGotPoints] = useState([]);
@@ -100,8 +102,9 @@ const EditFlipbook = () => {
         `${BASE_URL}/brochure/brochure/${flipbookName}`
       );
       const data = await response.json();
-      console.log(data, "getFlipbookImages");
+      console.log(data?.data?.isLandScape,105);
 
+      setRecordingPermisson(data?.data?.isRecordingEnable);
       setFlipbookImages(data?.data?.images);
       setIsLandscape(data?.data?.isLandScape);
       setIsPageFlipSoundOn(data?.data?.pageFlipSound);
@@ -744,7 +747,7 @@ const EditFlipbook = () => {
     }
   };
 
-  async function updateValues(endpoint) {
+  async function updateValues(values) {
     try {
       const response = await fetch(
         `${BASE_URL}/brochure/brochure/${flipbookName}/`,
@@ -753,12 +756,7 @@ const EditFlipbook = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            [endpoint]:
-              endpoint.toLowerCase() === "isLandScape".toLowerCase()
-                ? !isLandscape
-                : !isPageFlipSoundOn,
-          }),
+          body: JSON.stringify(values),
         }
       );
 
@@ -1216,6 +1214,7 @@ const EditFlipbook = () => {
           updateValues={updateValues}
           isLandscape={isLandscape}
           isPageFlipSoundOn={isPageFlipSoundOn}
+          recordingPermisson={recordingPermisson}
         />
       )}
     </div>
