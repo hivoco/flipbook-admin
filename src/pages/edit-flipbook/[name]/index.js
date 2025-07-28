@@ -83,7 +83,7 @@ const EditFlipbook = () => {
   const [isYouTubeVideo, setIsYouTubeVideo] = useState(false);
   const [youtubePlayer, setYoutubePlayer] = useState(null);
 
-  const [isLandscape, setIsLandscape] = useState(false);
+  const [isLandScape, setIsLandScape] = useState(false);
   const [isPageFlipSoundOn, setIsPageFlipSoundOn] = useState(false);
 
   useEffect(() => {
@@ -102,11 +102,10 @@ const EditFlipbook = () => {
         `${BASE_URL}/brochure/brochure/${flipbookName}`
       );
       const data = await response.json();
-      console.log(data?.data?.isLandScape,105);
 
       setRecordingPermisson(data?.data?.isRecordingEnable);
       setFlipbookImages(data?.data?.images);
-      setIsLandscape(data?.data?.isLandScape);
+      setIsLandScape(data?.data?.isLandScape);
       setIsPageFlipSoundOn(data?.data?.pageFlipSound);
     } catch (error) {
       console.error("Error fetching flipbook data:", error);
@@ -1212,7 +1211,7 @@ const EditFlipbook = () => {
           menuOpen={menuOpen}
           setMenuOpen={setMenuOpen}
           updateValues={updateValues}
-          isLandscape={isLandscape}
+          isLandScape={isLandScape}
           isPageFlipSoundOn={isPageFlipSoundOn}
           recordingPermisson={recordingPermisson}
         />

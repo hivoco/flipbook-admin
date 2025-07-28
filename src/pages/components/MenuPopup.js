@@ -7,11 +7,12 @@ export default function MenuPopup({
   menuOpen,
   setMenuOpen,
   updateValues,
-  isLandscape,
+  isLandScape,
   isPageFlipSoundOn,
   recordingPermisson,
 }) {
   const togglePopup = () => setMenuOpen(!menuOpen);
+
   return (
     <div className=" flex items-center justify-center p-4">
       {/* Popup Overlay */}
@@ -35,20 +36,20 @@ export default function MenuPopup({
               <div className="space-y-3">
                 <div className="flex gap-3 items-center">
                   <SwitchButton
-                    enabled={isLandscape}
-                    setEnabled={() => {
-                      updateValues({ isLandscape: !isLandscape });
+                    enabled={isLandScape}
+                    onToggle={() => {
+                      updateValues({ isLandScape: !isLandScape });
                     }}
                   />
                   <label
                     title={
-                      isLandscape
+                      isLandScape
                         ? "single page wide "
                         : " two pages side by side tall"
                     }
                     className="block text-sm font-medium text-gray-700"
                   >
-                    {isLandscape ? "Landscape" : "Portrait"}
+                    {isLandScape ? "LandScape" : "Portrait"}
                   </label>
 
                   {/* <button
@@ -87,7 +88,7 @@ export default function MenuPopup({
               <div className="flex items-center gap-3">
                 <SwitchButton
                   enabled={isPageFlipSoundOn}
-                  setEnabled={() => {
+                  onToggle={() => {
                     updateValues({ pageFlipSound: !isPageFlipSoundOn });
                   }}
                 />
@@ -103,7 +104,7 @@ export default function MenuPopup({
               <div className="flex items-center gap-3">
                 <SwitchButton
                   enabled={recordingPermisson}
-                  setEnabled={() => {
+                  onToggle={() => {
                     updateValues({ isRecordingEnable: !recordingPermisson });
                   }}
                 />

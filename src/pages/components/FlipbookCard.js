@@ -24,10 +24,10 @@ const FlipbookCard = ({ flipbook, id, getAllBrocchures }) => {
   const firstImageLink = (imageArr) =>
     imageArr.find((u) => /1\.(jpg|png)$/.test(u));
   return (
-    <Link href={`/edit-flipbook/${flipbook?.name}`}>
-      <div className="bg-white relative rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
-        <div className="relative h-36  bg-gray-100 ">
-          {flipbook?.images?.length > 0 ? (
+    <div className="bg-white relative rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
+      <div className="relative h-36  bg-gray-100 ">
+        {flipbook?.images?.length > 0 ? (
+          <Link href={`/edit-flipbook/${flipbook?.name}`}>
             <Image
               src={firstImageLink(flipbook.images) || flipbook?.images[0]}
               alt={flipbook?.displayName || "Flipbook Image"}
@@ -37,60 +37,61 @@ const FlipbookCard = ({ flipbook, id, getAllBrocchures }) => {
               fetchPriority={"high"}
               priority={true}
             />
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400">
-              <BookOpen size={48} />
-            </div>
-          )}
-          <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-sm">
-            {flipbook?.images?.length} pages
+          </Link>
+        ) : (
+          <div className="flex items-center justify-center h-full text-gray-400">
+            <BookOpen size={48} />
           </div>
-        </div>
-
-        <div className="p-4 flex  justify-between">
-          <div>
-            <h3 className="font-bold text-lg mb-2 truncate">
-              {flipbook?.displayName}
-            </h3>
-            <p className="text-gray-600 text-sm mb-4">
-              Created: {convertToReadableDate(flipbook?.createdAt)}
-            </p>
-
-            <a
-            onClick={e=>e.stopPropagation()}
-              target="_blank"
-              className="text-blue-600 underline hover:text-blue-800 text-sm"
-              href={`${ADMIN_URL}/analytics/${flipbook?.name}`}
-            >
-              Check Analytics
-            </a>
-          </div>
-
-          <MoreVertical
-            onClick={(e) => {
-              setIsOpen(true);
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            size={16}
-            className="text-gray-600 "
-          />
-
-          {isOpen && (
-            <Modal
-              isOpen={isOpen || false}
-              setIsOpen={setIsOpen}
-              selectionButtonText={"Delete"}
-              subText={
-                "Are you sure you want to delete this item? This action cannot be undone"
-              }
-              title={"Confirm Deletion"}
-              mainButtonFunction={deleteBrochure}
-            />
-          )}
+        )}
+        <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-sm">
+          {flipbook?.images?.length} pages
         </div>
       </div>
-    </Link>
+
+      <div className="p-4 flex  justify-between">
+        <div>
+          <h3 className="font-bold text-lg mb-2 truncate">
+            {flipbook?.displayName}
+          </h3>
+          <p className="text-gray-600 text-sm mb-4">
+            Created: {convertToReadableDate(flipbook?.createdAt)}
+          </p>
+
+          <a
+            onClick={(e) => e.stopPropagation()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline hover:text-blue-800 text-sm"
+            href={`${ADMIN_URL}/analytics/${flipbook?.name}`}
+          >
+            Check Analytics
+          </a>
+        </div>
+
+        <MoreVertical
+          onClick={(e) => {
+            setIsOpen(true);
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          size={16}
+          className="text-gray-600 "
+        />
+
+        {isOpen && (
+          <Modal
+            isOpen={isOpen || false}
+            setIsOpen={setIsOpen}
+            selectionButtonText={"Delete"}
+            subText={
+              "Are you sure you want to delete this item? This action cannot be undone"
+            }
+            title={"Confirm Deletion"}
+            mainButtonFunction={deleteBrochure}
+          />
+        )}
+      </div>
+    </div>
   );
 };
 

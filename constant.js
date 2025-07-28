@@ -1,5 +1,4 @@
-export const BASE_URL = `
-https://flipbook.api.thefirstimpression.ai`;
+export const BASE_URL = `https://flipbook.api.thefirstimpression.ai`;
 
 export const ADMIN_URL = "https://flipbook.admin.thefirstimpression.ai/";
 
@@ -11,7 +10,6 @@ export const USER_FACING_URL = "https://flipbook.thefirstimpression.ai";
 
 export const EMAIL = "admin@flipbook.com";
 export const PASSWORD = "@flipbook";
-
 
 // EMAIL = "admin@flipbook.com";
 // PASSWORD = "@flipbook";
