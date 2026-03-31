@@ -8,7 +8,7 @@ const HoverCarousel = ({ images, isHovered }) => {
 
   const nextImage = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === images.length - 1 ? 0 : prevIndex + 1
+      !images ? 0 : prevIndex === images.length - 1 ? 0 : prevIndex + 1
     );
   };
 

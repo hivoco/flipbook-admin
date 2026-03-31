@@ -107,15 +107,22 @@ const Admin = () => {
   };
 
   const getAllBrocchures = async () => {
-    const res = await fetch(
-      `${BASE_URL}/brochure/brochures?page=${pageNumber}&limit=${cardsLimit}`
-    );
-    const data = await res.json();
-    setPaginationInfo(data?.data?.pagination);
-
-    setFlipbooks(data?.data?.brochures);
-    setFilteredFlipbooks(data?.data?.brochures);
-    // console.log(data, "data");
+    try {
+      const res = await fetch(
+        `${BASE_URL}/brochure/brochures?page=${pageNumber}&limit=${cardsLimit}`
+      );
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+      const data = await res.json();
+      setPaginationInfo(data?.data?.pagination);
+      setFlipbooks(data?.data?.brochures || []);
+      setFilteredFlipbooks(data?.data?.brochures || []);
+    } catch (err) {
+      console.error("Failed to fetch brochures:", err);
+      setFlipbooks([]);
+      setFilteredFlipbooks([]);
+    }
   };
 
   useEffect(() => {

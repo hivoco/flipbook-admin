@@ -22,7 +22,7 @@ export default function FilterByPerson({ flipbooks, setFilteredFlipbooks }) {
     }
 
     setFilteredFlipbooks(
-      flipbooks.filter(
+      (flipbooks || []).filter(
         (f) => f?.personName?.toLowerCase() === selected?.toLowerCase()
       )
     );
